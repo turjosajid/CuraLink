@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'Aeonik';
+    src: url('./fonts/Aeonik-Regular.woff2') format('woff2'),
+         url('./fonts/Aeonik-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+  body {
+    font-family: 'Aeonik', sans-serif;
+    font-kerning: normal;
+    letter-spacing: 0.1em; /* Fine-tune for aesthetic balance */
+  }

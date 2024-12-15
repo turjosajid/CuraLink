@@ -1,0 +1,95 @@
+
+
+body {
+    margin: 0;
+    background: linear-gradient(120deg, #6a11cb, #2575fc);
+    color: #ffffff;
+  }
+  
+  .homepage {
+    text-align: center;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .logo {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .nav a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 16px;
+  }
+  
+  .login-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background: #1f2aff;
+    color: black;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+
+  
+  .main-content {
+    font-family: 'Aeonik';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 85vh;
+    padding: 0 10%;
+  }
+  
+  .text-content {
+    margin: 20px;
+    max-width: 600px;
+    text-align: left;
+  }
+  
+  .text-content h1 {
+    font-size: 48px;
+    line-height: 1.2;
+  }
+  
+  .text-content p {
+    font-size: 18px;
+    margin: 30px 0;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: justify;
+  }
+  
+  .cta-button {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 30px;
+    background: #ffffff;
+    color: #2575fc;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .cta-button:hover {
+    background: #f0f0f0;
+  }
+  
+  .image-content img {
+    width: 600px;
+    border-radius: 20px;
+  }
+  
