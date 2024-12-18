@@ -99,3 +99,34 @@ h2 {
 .patient-info h3 {
     margin: 0 0 1rem 0;
 }
+
+.doctor-profile {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-profile h2 {
+    color: #2c3e50;
+    margin-bottom: 16px;
+    font-size: 1.5rem;
+}
+
+.profile-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.profile-info p {
+    margin: 8px 0;
+    font-size: 1rem;
+    color: #4a5568;
+}
+
+.profile-info strong {
+    color: #2d3748;
+    font-weight: 600;
+}

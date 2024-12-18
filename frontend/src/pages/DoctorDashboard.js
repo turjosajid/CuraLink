@@ -67,7 +67,15 @@ const DoctorDashboard = () => {
 
     return (
         <div className="doctor-dashboard">
-            <h1>Doctor Dashboard</h1>
+            {user && (
+                <div className="doctor-profile">
+                    <h2>Doctor Profile</h2>
+                    <div className="profile-info">
+                        <p><strong>Name:</strong> {user.name}</p>
+                        <p><strong>Email:</strong> {user.email}</p>
+                    </div>
+                </div>
+            )}
             
             <section className="appointments-section">
                 <h2>Upcoming Appointments</h2>
