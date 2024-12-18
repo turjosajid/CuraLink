@@ -19,7 +19,7 @@ function HomePage() {
       <main className="main-content">
         <div className="text-content">
           <h1>Empowering Better Healthcare Outcomes</h1>
-          <button className="cta-button">Join Us</button>
+          <Link to='/register' className="cta-button">Join Us</Link>
         </div>
         <div className="image-content">
           <img
