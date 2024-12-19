@@ -12,5 +12,7 @@ const DoctorSchema = new mongoose.Schema({
         date: { type: Date },
         notes: { type: String }
     }],
-    reports: [{ type: String }], // Links to reports
+    reports: [{ type: String }] // Links to reports
 }, { timestamps: true });
+
+module.exports = mongoose.model('Doctor', DoctorSchema);
