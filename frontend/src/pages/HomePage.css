@@ -1,95 +1,140 @@
-
-
 body {
-    margin: 0;
-    background: linear-gradient(120deg, #6a11cb, #2575fc);
-    color: #ffffff;
-  }
-  
-  .homepage {
-    text-align: center;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 40px;
-    background: rgba(0, 0, 0, 0.5);
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .logo {
-    font-size: 24px;
-    font-weight: bold;
-  }
-  
-  .nav a {
-    margin: 0 15px;
-    text-decoration: none;
-    color: #ffffff;
-    font-size: 16px;
-  }
-  
-  .login-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    background: #1f2aff;
-    color: black;
-    font-weight: bold;
-    text-decoration: none;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  
+  margin: 0;
+  background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
 
-  
+.homepage {
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 4rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(to right, #fff, #e0e0e0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.login-button {
+  padding: 0.75rem 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.login-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.main-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8rem;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(90vh - 100px); /* Reduced from 100vh to 90vh */
+  margin-top: -2rem; /* Add negative margin to pull content up */
+}
+
+.text-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+.text-content h1 {
+  font-size: 3.5rem;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2.5rem;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  background: #ffffff;
+  color: #2575fc;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.image-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-content img {
+  max-width: 600px;
+  width: 100%;
+  height: auto;
+  border-radius: 20px;
+  object-fit: contain;
+}
+
+.image-content img:hover {
+  transform: none;
+}
+
+@media (max-width: 1024px) {
   .main-content {
-    font-family: 'Aeonik';
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 85vh;
-    padding: 0 10%;
+    flex-direction: column;
+    padding: 1rem 2rem;
+    gap: 3rem;
+    margin-top: -1rem; /* Smaller negative margin for mobile */
   }
   
   .text-content {
-    margin: 20px;
-    max-width: 600px;
-    text-align: left;
+    max-width: 100%;
   }
   
-  .text-content h1 {
-    font-size: 48px;
-    line-height: 1.2;
-  }
-  
-  .text-content p {
-    font-size: 18px;
-    margin: 30px 0;
-    color: rgba(255, 255, 255, 0.9);
-    text-align: justify;
-  }
-  
-  .cta-button {
-    padding: 15px 30px;
-    border: none;
-    border-radius: 30px;
-    background: #ffffff;
-    color: #2575fc;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  
-  .cta-button:hover {
-    background: #f0f0f0;
+  .header {
+    padding: 1rem 2rem;
   }
   
   .image-content img {
-    width: 600px;
-    border-radius: 20px;
+    max-width: 500px;
   }
-  
+}

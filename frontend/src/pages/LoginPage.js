@@ -87,6 +87,10 @@ function LoginPage() {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+        
+        <div className="signup-link">
+          Don't have an account? <a href="/register">Sign up</a>
+        </div>
       </div>
     </div>
   );

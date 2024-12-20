@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../config/axios';
+import './Register.css';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -38,143 +39,59 @@ const Register = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.formContainer}>
-        <h2 style={styles.title}>Register</h2>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Name</label>
+    <div className="register-container">
+      <div className="register-box">
+        <h2>Register</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              style={styles.input}
             />
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Email</label>
+          <div className="form-group">
+            <label>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={styles.input}
             />
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Password</label>
+          <div className="form-group">
+            <label>Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={styles.input}
             />
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Role</label>
+          <div className="form-group">
+            <label>Role</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
               required
-              style={styles.select}
             >
               <option value="">Select Role</option>
               <option value="doctor">Doctor</option>
               <option value="patient">Patient</option>
+              <option value="medicalStudent">Medical Student</option>
+              <option value="pharmacist">Pharmacist</option>
             </select>
           </div>
-          <button 
-            type="submit" 
-            disabled={loading}
-            style={styles.button}
-          >
+          <button type="submit" disabled={loading}>
             {loading ? 'Registering...' : 'Register'}
           </button>
         </form>
-        {message && <p style={message.includes('successful') ? styles.successMessage : styles.errorMessage}>{message}</p>}
+        {message && <p className={message.includes('successful') ? 'success-message' : 'error-message'}>{message}</p>}
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    backgroundColor: '#f7f7f7',
-    padding: '20px',
-  },
-  formContainer: {
-    backgroundColor: '#fff',
-    padding: '30px',
-    borderRadius: '10px',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-    width: '100%',
-    maxWidth: '400px',
-  },
-  title: {
-    textAlign: 'center',
-    color: '#333',
-    marginBottom: '30px',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '5px',
-  },
-  label: {
-    color: '#555',
-    fontSize: '14px',
-  },
-  input: {
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    fontSize: '16px',
-  },
-  select: {
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    fontSize: '16px',
-    backgroundColor: '#fff',
-  },
-  button: {
-    padding: '12px',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    fontSize: '16px',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-    ':hover': {
-      backgroundColor: '#0056b3',
-    },
-    ':disabled': {
-      backgroundColor: '#ccc',
-      cursor: 'not-allowed',
-    },
-  },
-  successMessage: {
-    color: '#28a745',
-    textAlign: 'center',
-    marginTop: '15px',
-  },
-  errorMessage: {
-    color: '#dc3545',
-    textAlign: 'center',
-    marginTop: '15px',
-  },
 };
 
 export default Register;
