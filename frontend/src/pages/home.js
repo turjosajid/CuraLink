@@ -1,13 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Container, Typography } from '@mui/material';
-import GradientLayout from '../components/GradientLayout';
 
 const HomePage = () => {
   const navigate = useNavigate();
 
   return (
-    <GradientLayout>
+    <Box sx={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
       {/* Logo in top left */}
       <Box sx={{
         position: 'absolute',
@@ -123,7 +127,7 @@ const HomePage = () => {
           </Box>
         </Box>
       </Container>
-    </GradientLayout>
+    </Box>
   );
 };
 
