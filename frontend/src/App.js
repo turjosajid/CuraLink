@@ -1,12 +1,19 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import Register from "./pages/Register";
-import DoctorDashboard from "./pages/DoctorDashboard";
-import PatientDashboard from "./pages/PatientDashboard";
-import { AuthProvider } from "./context/AuthContext";
-import './fonts.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import HomePage from "./pages/home";
+import LoginPage from "./pages/login";
+import Register from "./pages/register";
+import DoctorDashboard from "./pages/doctordashboard";
+import DoctorRegistration from './pages/DoctorRegistration';
+import { AuthProvider, useAuth } from "./context/AuthContext";
+
+// Protected Route Component
+const PrivateRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" />;
+  if (user.role !== 'doctor') return <Navigate to="/" />;
+  return children;
+};
 
 function App() {
   return (
@@ -15,9 +22,16 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<Register />}/>
-          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-          <Route path="/patient/dashboard" element={<PatientDashboard />} />
+          <Route path="/register" element={<Register />} />
+          <Route 
+            path="/doctor/dashboard" 
+            element={
+              <PrivateRoute>
+                <DoctorDashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route path="/doctor/register" element={<DoctorRegistration />} />
         </Routes>
       </Router>
     </AuthProvider>

@@ -1,287 +1,687 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { 
+  Box, Container, Typography, Paper, Grid, Button, List, ListItem, 
+  ListItemText, TextField, Dialog, DialogTitle, DialogContent, 
+  DialogActions, IconButton, CircularProgress, Stack, Divider, IconButton as MuiIconButton,
+  List as MuiList, ListItem as MuiListItem, 
+  ListItemSecondaryAction, Card, CardContent, CardHeader, Avatar, Chip,
+  useTheme, Tooltip, Badge 
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
+import SchoolIcon from '@mui/icons-material/School';
+import WorkIcon from '@mui/icons-material/Work';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import GroupIcon from '@mui/icons-material/Group';
+import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import Topbar from '../components/Topbar';
-import axiosInstance from '../config/axios';
-import { useAuth } from '../context/AuthContext';
-import './Dashboard.css';
-import EditProfileModal from '../components/EditProfileModal';
-import AppointmentSlotsModal from '../components/AppointmentSlotsModal';
 
 const DoctorDashboard = () => {
-    const [appointments, setAppointments] = useState([]);
-    const [patients, setPatients] = useState([]);
-    const [selectedPatient, setSelectedPatient] = useState(null);
-    const [medicalRecords, setMedicalRecords] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const { user, logout, updateUserData } = useAuth();  // Add updateUserData
-    const navigate = useNavigate();
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [showSlotsModal, setShowSlotsModal] = useState(false);
-    const [appointmentSlots, setAppointmentSlots] = useState([]);
+  const [doctorProfile, setDoctorProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState(null);
+  const { user, token, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        if (!user || user.role !== 'doctor') {
-            navigate('/login');
-            return;
+  // Add new state for education and certificates
+  const [newEducation, setNewEducation] = useState({ degree: '', institute: '', year: '' });
+  const [newCertificate, setNewCertificate] = useState({ name: '', issuer: '', year: '' });
+
+  const fetchDoctorProfile = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:5000/api/doctors/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-        fetchDashboardData();
-        if (user) {
-            fetchAppointmentSlots();
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 404 && data.status === 'PROFILE_NOT_FOUND') {
+          setError({
+            type: 'PROFILE_NOT_FOUND',
+            message: 'Please complete your doctor profile registration.',
+            action: 'register'
+          });
+        } else if (response.status === 403) {
+          setError({
+            type: 'NOT_AUTHORIZED',
+            message: 'You are not authorized as a doctor.',
+            action: 'redirect'
+          });
+        } else {
+          throw new Error(data.message || 'Failed to fetch profile');
         }
-    }, [user, navigate]);
+        return;
+      }
 
-    const fetchDashboardData = async () => {
-        try {
-            const [appointmentsResponse, patientsResponse] = await Promise.all([
-                axiosInstance.get(`/appointments/doctor/${user._id}`),
-                axiosInstance.get('/patients/doctor')
-            ]);
-            setAppointments(appointmentsResponse.data);
-            setPatients(patientsResponse.data);
-        } catch (error) {
-            console.error('Error fetching dashboard data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchAppointmentSlots = async () => {
-        try {
-            const response = await axiosInstance.get(`/doctors/${user._id}/slots`);
-            if (Array.isArray(response.data)) {
-                setAppointmentSlots(response.data);
-            } else {
-                setAppointmentSlots([]);
-            }
-        } catch (error) {
-            console.error('Error fetching appointment slots:', error);
-            setAppointmentSlots([]);
-        }
-    };
-
-    const handlePrescription = async (patientId) => {
-        try {
-            const prescriptionData = {
-                patientId,
-                doctorId: user._id,
-                diagnosis: 'Sample diagnosis',
-                prescription: [{
-                    medication: 'Sample medication',
-                    dosage: '1 tablet',
-                    frequency: 'twice daily',
-                    duration: '7 days'
-                }]
-            };
-            await axiosInstance.post('/medical-records', prescriptionData);
-            fetchMedicalRecords(patientId);
-        } catch (error) {
-            console.error('Error creating prescription:', error);
-        }
-    };
-
-    const fetchMedicalRecords = async (patientId) => {
-        try {
-            const response = await axiosInstance.get(`/medical-records/patient/${patientId}`);
-            setMedicalRecords(response.data);
-        } catch (error) {
-            console.error('Error fetching medical records:', error);
-        }
-    };
-
-    const handleProfileUpdate = async (updatedData) => {
-        try {
-            const response = await axiosInstance.put(`/doctors/${user._id}/profile`, updatedData);
-            if (response.data) {
-                await updateUserData();  // Update the user data in context
-                setShowEditModal(false);
-                // Optional: Show success message
-                alert('Profile updated successfully');
-            }
-        } catch (error) {
-            console.error('Error updating profile:', error);
-            alert('Failed to update profile. Please try again.');
-        }
-    };
-
-    const handleSaveSlots = async (slots) => {
-        try {
-            console.log('Attempting to save slots:', slots);
-            
-            const response = await axiosInstance.put(`/doctors/${user._id}/slots`, {
-                slots: slots
-            });
-
-            console.log('Server response:', response);
-
-            if (response.data) {
-                setAppointmentSlots(response.data);
-                setShowSlotsModal(false);
-                alert('Appointment slots updated successfully');
-            }
-        } catch (error) {
-            console.error('Full error:', error);
-            console.error('Error response:', error.response);
-            alert(
-                error.response?.data?.message || 
-                'Failed to update appointment slots. Please try again.'
-            );
-        }
-    };
-
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    };
-
-    if (!user || user.role !== 'doctor') {
-        return null;
+      setDoctorProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setError({
+        type: 'FETCH_ERROR',
+        message: 'Failed to load doctor profile. Please try again.',
+        action: 'retry'
+      });
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    if (loading) {
-        return <div className="dashboard-loading">Loading...</div>;
+  useEffect(() => {
+    if (token) {
+      fetchDoctorProfile();
     }
+  }, [token]);
 
-    return (
-        <div className="dashboard-wrapper">
-            <Topbar />
-            <div className="dashboard-container">
-                <div className="dashboard-header">
-                    <h1>Welcome Dr. {user.name}</h1>
-                </div>
-                
-                <div className="dashboard-grid">
-                    <div className="dashboard-card profile-card">
-                        <h2>Doctor Profile</h2>
-                        <div className="profile-content">
-                            <div className="doctor-name">
-                                <h3>Dr. {user.name}</h3>
-                                {user.specialization && <span className="specialization">{user.specialization}</span>}
-                            </div>
-                            <h4>Education</h4>
-                            {user.education && user.education.length > 0 ? (
-                                user.education.map((edu, index) => (
-                                    <div key={index} className="education-item">
-                                        <p>{edu.degree} - {edu.institution} ({edu.year})</p>
-                                    </div>
-                                ))
-                            ) : (
-                                <p>No education details added</p>
-                            )}
-                            <div className="profile-actions">
-                                <button 
-                                    className="edit-profile-button"
-                                    onClick={() => setShowEditModal(true)}
-                                >
-                                    Edit Profile
-                                </button>
-                                <button 
-                                    className="manage-slots-button"
-                                    onClick={() => setShowSlotsModal(true)}
-                                >
-                                    Manage Appointment Slots
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+  const handleRetry = () => {
+    if (token) {
+      fetchDoctorProfile();
+    }
+  };
 
-                    <div className="dashboard-card">
-                        <h2>Upcoming Appointments</h2>
-                        <div className="card-content">
-                            {appointments.length > 0 ? (
-                                <ul>
-                                    {appointments.map(appointment => (
-                                        <li key={appointment._id}>
-                                            <h3>Patient: {appointment.patient?.name}</h3>
-                                            <p>Date: {new Date(appointment.dateTime).toLocaleString()}</p>
-                                            <p>Reason: {appointment.reason}</p>
-                                            <button className="primary-button" onClick={() => setSelectedPatient(appointment.patient)}>
-                                                View Details
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p>No upcoming appointments.</p>
-                            )}
-                        </div>
-                    </div>
+  const handleEdit = () => {
+    setEditedProfile({ ...doctorProfile });
+    setIsEditing(true);
+  };
 
-                    <div className="dashboard-card">
-                        <h2>Patient List</h2>
-                        <div className="card-content">
-                            {patients.length > 0 ? (
-                                <ul>
-                                    {patients.map(patient => (
-                                        <li key={patient._id}>
-                                            <h3>{patient.name}</h3>
-                                            <p>Last Visit: {patient.lastVisit || 'N/A'}</p>
-                                            <button className="secondary-button" onClick={() => setSelectedPatient(patient)}>
-                                                View Records
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p>No patients found.</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
+  const handleSave = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/doctors/profile', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(editedProfile)
+      });
 
-                {selectedPatient && (
-                    <section className="patient-details">
-                        <h2>Patient Details</h2>
-                        <div className="patient-info">
-                            <h3>{selectedPatient.name}</h3>
-                            <p>Email: {selectedPatient.email}</p>
-                            <button 
-                                className="primary-button"
-                                onClick={() => handlePrescription(selectedPatient._id)}
-                            >
-                                Create Prescription
-                            </button>
-                        </div>
+      if (!response.ok) throw new Error('Update failed');
+      
+      const updatedProfile = await response.json();
+      setDoctorProfile(updatedProfile);
+      setIsEditing(false);
+    } catch (error) {
+      setError('Failed to update profile');
+    }
+  };
 
-                        <div className="medical-records">
-                            <h3>Medical Records</h3>
-                            {medicalRecords.map(record => (
-                                <div key={record._id} className="record-card">
-                                    <p>Date: {new Date(record.createdAt).toLocaleDateString()}</p>
-                                    <p>Diagnosis: {record.diagnosis}</p>
-                                    <div className="prescriptions">
-                                        {record.prescription.map((med, index) => (
-                                            <div key={index} className="prescription">
-                                                <p>Medication: {med.medication}</p>
-                                                <p>Dosage: {med.dosage}</p>
-                                                <p>Frequency: {med.frequency}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
-            </div>
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name.includes('.')) {
+      const [parent, child] = name.split('.');
+      setEditedProfile(prev => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: value
+        }
+      }));
+    } else {
+      setEditedProfile(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
 
-            <EditProfileModal
-                show={showEditModal}
-                onClose={() => setShowEditModal(false)}
-                onSave={handleProfileUpdate}
-                initialData={{
-                    specialization: user.specialization || '',
-                    education: user.education || []
+  // Handle education changes
+  const handleAddEducation = () => {
+    setEditedProfile(prev => ({
+      ...prev,
+      education: [...(prev.education || []), newEducation]
+    }));
+    setNewEducation({ degree: '', institute: '', year: '' });
+  };
+
+  const handleRemoveEducation = (index) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      education: prev.education.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Handle certificate changes
+  const handleAddCertificate = () => {
+    setEditedProfile(prev => ({
+      ...prev,
+      certificates: [...(prev.certificates || []), newCertificate]
+    }));
+    setNewCertificate({ name: '', issuer: '', year: '' });
+  };
+
+  const handleRemoveCertificate = (index) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      certificates: prev.certificates.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Add logout handler
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  if (isLoading) return (
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+      <CircularProgress />
+      <Typography sx={{ ml: 2 }}>Loading profile...</Typography>
+    </Box>
+  );
+
+  if (error) return (
+    <Box display="flex" flexDirection="column" alignItems="center" minHeight="80vh" padding={4}>
+      <Typography color="error" gutterBottom>{error.message}</Typography>
+      {error.action === 'retry' && (
+        <Button variant="contained" onClick={handleRetry} sx={{ mt: 2 }}>
+          Retry Loading
+        </Button>
+      )}
+      {error.action === 'register' && (
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={() => navigate('/doctor/register')} 
+          sx={{ mt: 2 }}
+        >
+          Complete Registration
+        </Button>
+      )}
+      {error.action === 'redirect' && (
+        <Button variant="contained" color="primary" href="/" sx={{ mt: 2 }}>
+          Go to Home
+        </Button>
+      )}
+    </Box>
+  );
+
+  if (!doctorProfile) return (
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+      <Typography>No profile data available</Typography>
+    </Box>
+  );
+
+  return (
+    <Box sx={{ 
+      minHeight: '100vh',
+      backgroundColor: (theme) => theme.palette.grey[100],
+      py: 4
+    }}>
+      <Container maxWidth="lg">
+        {/* Header */}
+        <Card sx={{ mb: 4, p: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Avatar
+                sx={{ 
+                  width: 64, 
+                  height: 64,
+                  bgcolor: (theme) => theme.palette.primary.main 
                 }}
-            />
+              >
+                {user.name[0]}
+              </Avatar>
+              <Box>
+                <Typography variant="h4">{user.name}</Typography>
+                <Typography variant="subtitle1" color="text.secondary">
+                  {doctorProfile.specialization}
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="contained"
+                startIcon={<EditIcon />}
+                onClick={handleEdit}
+              >
+                Edit Profile
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            </Box>
+          </Box>
+        </Card>
 
-            <AppointmentSlotsModal
-                show={showSlotsModal}
-                onClose={() => setShowSlotsModal(false)}
-                onSave={handleSaveSlots}
-                initialSlots={appointmentSlots}
-            />
-        </div>
-    );
+        <Grid container spacing={3}>
+          {/* Profile Information */}
+          <Grid item xs={12} md={8}>
+            <Card>
+              <CardHeader title="Profile Information" />
+              <CardContent>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <WorkIcon sx={{ mr: 1, color: 'primary.main' }} />
+                      <Typography>Experience: {doctorProfile.experience} years</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <SchoolIcon sx={{ mr: 1, color: 'primary.main' }} />
+                      <Typography>License: {doctorProfile.license}</Typography>
+                    </Box>
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2 }}>
+                      About
+                    </Typography>
+                    <Typography paragraph>{doctorProfile.about}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Languages
+                    </Typography>
+                    <Box sx={{ mt: 1, mb: 2 }}>
+                      {doctorProfile.languages?.map((lang) => (
+                        <Chip 
+                          key={lang} 
+                          label={lang} 
+                          sx={{ mr: 1, mb: 1 }} 
+                          size="small"
+                        />
+                      ))}
+                    </Box>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Address
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mt: 1 }}>
+                      <LocationOnIcon sx={{ mr: 1, color: 'primary.main' }} />
+                      <Typography>
+                        {`${doctorProfile.address?.street}, ${doctorProfile.address?.city}`}<br />
+                        {`${doctorProfile.address?.state}, ${doctorProfile.address?.country}`}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Quick Stats */}
+          <Grid item xs={12} md={4}>
+            <Card>
+              <CardHeader title="Quick Stats" />
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" color="primary">
+                      ${doctorProfile.fees}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Consultation Fee
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" color="primary">
+                      {doctorProfile.patients?.length || 0}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Patients
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Update Education & Certificates Card */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardHeader 
+                title="Education & Certificates"
+                action={
+                  <IconButton onClick={handleEdit}>
+                    <EditIcon />
+                  </IconButton>
+                }
+              />
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  <SchoolIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  Education
+                </Typography>
+                <List>
+                  {doctorProfile.education?.map((edu, index) => (
+                    <ListItem key={index}>
+                      <ListItemText
+                        primary={
+                          <Typography variant="subtitle1">
+                            {edu.degree}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="body2" color="text.secondary">
+                            {`${edu.institute} - ${edu.year}`}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+
+                <Divider sx={{ my: 2 }} />
+
+                <Typography variant="h6" gutterBottom>
+                  <WorkIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  Certificates
+                </Typography>
+                <List>
+                  {doctorProfile.certificates?.map((cert, index) => (
+                    <ListItem key={index}>
+                      <ListItemText
+                        primary={
+                          <Typography variant="subtitle1">
+                            {cert.name}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="body2" color="text.secondary">
+                            {`${cert.issuer} - ${cert.year}`}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Patients List */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardHeader 
+                title={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <GroupIcon sx={{ mr: 1 }} />
+                    <Typography variant="h6">Patients</Typography>
+                  </Box>
+                }
+              />
+              <CardContent>
+                <List>
+                  {doctorProfile.patients.map((patient) => (
+                    <ListItem 
+                      key={patient._id}
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                          borderRadius: 1
+                        }
+                      }}
+                    >
+                      <ListItemText 
+                        primary={patient.name}
+                        secondary={patient.email}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Edit Dialog remains unchanged */}
+        <Dialog open={isEditing} onClose={() => setIsEditing(false)} maxWidth="md" fullWidth>
+          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogContent>
+            <Box sx={{ mt: 2 }}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    required
+                    label="Specialization"
+                    name="specialization"
+                    value={editedProfile?.specialization || ''}
+                    onChange={handleChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    required
+                    label="License Number"
+                    name="license"
+                    value={editedProfile?.license || ''}
+                    onChange={handleChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    required
+                    type="number"
+                    label="Years of Experience"
+                    name="experience"
+                    value={editedProfile?.experience || ''}
+                    onChange={handleChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    required
+                    type="number"
+                    label="Consultation Fee"
+                    name="fees"
+                    value={editedProfile?.fees || ''}
+                    onChange={handleChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    label="About"
+                    name="about"
+                    value={editedProfile?.about || ''}
+                    onChange={handleChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Languages (comma-separated)"
+                    name="languages"
+                    value={editedProfile?.languages?.join(', ') || ''}
+                    onChange={(e) => setEditedProfile({
+                      ...editedProfile,
+                      languages: e.target.value.split(',').map(lang => lang.trim())
+                    })}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+
+                {/* Address Fields */}
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>Address</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Street"
+                    name="address.street"
+                    value={editedProfile?.address?.street || ''}
+                    onChange={handleChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="City"
+                    name="address.city"
+                    value={editedProfile?.address?.city || ''}
+                    onChange={handleChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="State"
+                    name="address.state"
+                    value={editedProfile?.address?.state || ''}
+                    onChange={handleChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Country"
+                    name="address.country"
+                    value={editedProfile?.address?.country || ''}
+                    onChange={handleChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Zip Code"
+                    name="address.zipCode"
+                    value={editedProfile?.address?.zipCode || ''}
+                    onChange={handleChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+
+                {/* Education Section */}
+                <Grid item xs={12}>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom>Education</Typography>
+                  <Stack spacing={2}>
+                    {editedProfile?.education?.map((edu, index) => (
+                      <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography>{`${edu.degree} - ${edu.institute} (${edu.year})`}</Typography>
+                        <IconButton size="small" onClick={() => handleRemoveEducation(index)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    ))}
+                    <Grid container spacing={2}>
+                      <Grid item xs={4}>
+                        <TextField
+                          fullWidth
+                          label="Degree"
+                          value={newEducation.degree}
+                          onChange={(e) => setNewEducation(prev => ({ ...prev, degree: e.target.value }))}
+                        />
+                      </Grid>
+                      <Grid item xs={4}>
+                        <TextField
+                          fullWidth
+                          label="Institute"
+                          value={newEducation.institute}
+                          onChange={(e) => setNewEducation(prev => ({ ...prev, institute: e.target.value }))}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <TextField
+                          fullWidth
+                          label="Year"
+                          value={newEducation.year}
+                          onChange={(e) => setNewEducation(prev => ({ ...prev, year: e.target.value }))}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <Button 
+                          variant="contained" 
+                          onClick={handleAddEducation}
+                          disabled={!newEducation.degree || !newEducation.institute || !newEducation.year}
+                        >
+                          Add
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Stack>
+                </Grid>
+
+                {/* Certificates Section */}
+                <Grid item xs={12}>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom>Certificates</Typography>
+                  <Stack spacing={2}>
+                    {editedProfile?.certificates?.map((cert, index) => (
+                      <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography>{`${cert.name} - ${cert.issuer} (${cert.year})`}</Typography>
+                        <IconButton size="small" onClick={() => handleRemoveCertificate(index)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    ))}
+                    <Grid container spacing={2}>
+                      <Grid item xs={4}>
+                        <TextField
+                          fullWidth
+                          label="Certificate Name"
+                          value={newCertificate.name}
+                          onChange={(e) => setNewCertificate(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                      </Grid>
+                      <Grid item xs={4}>
+                        <TextField
+                          fullWidth
+                          label="Issuer"
+                          value={newCertificate.issuer}
+                          onChange={(e) => setNewCertificate(prev => ({ ...prev, issuer: e.target.value }))}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <TextField
+                          fullWidth
+                          label="Year"
+                          value={newCertificate.year}
+                          onChange={(e) => setNewCertificate(prev => ({ ...prev, year: e.target.value }))}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <Button 
+                          variant="contained" 
+                          onClick={handleAddCertificate}
+                          disabled={!newCertificate.name || !newCertificate.issuer || !newCertificate.year}
+                        >
+                          Add
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Stack>
+                </Grid>
+              </Grid>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsEditing(false)}>Cancel</Button>
+            <Button onClick={handleSave} variant="contained">Save</Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </Box>
+  );
 };
 
 export default DoctorDashboard;

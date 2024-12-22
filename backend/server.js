@@ -3,11 +3,6 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 
-// Import routes
-const userRoutes = require('./routes/userRoutes');
-const appointmentRoutes = require('./routes/appointmentRoutes');
-const medicalRecordRoutes = require('./routes/medicalRecordRoutes');
-
 // Load environment variables
 dotenv.config();
 
@@ -29,10 +24,13 @@ mongoose.connect(process.env.MONGO_URI, {
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Import routes
+const userRoutes = require('./routes/userRoutes');
+const doctorRoutes = require('./routes/doctorRoutes');
+
 // Use routes
 app.use('/api/users', userRoutes);
-app.use('/api/appointments', appointmentRoutes);
-app.use('/api/medical-records', medicalRecordRoutes);
+app.use('/api/doctors', doctorRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
