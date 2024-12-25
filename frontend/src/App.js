@@ -2,8 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/home";
 import LoginPage from "./pages/login";
-import Register from "./pages/register";
-import DoctorDashboard from "./pages/doctordashboard";
+import Register from "./pages/Register";
+import DoctorDashboard from "./pages/DoctorDashboard";
 import DoctorRegistration from './pages/DoctorRegistration';
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
