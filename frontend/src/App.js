@@ -5,13 +5,14 @@ import LoginPage from "./pages/login";
 import Register from "./pages/Register";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import DoctorRegistration from './pages/DoctorRegistration';
+import PatientDashboard from './pages/PatientDashboard';
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 // Protected Route Component
-const PrivateRoute = ({ children }) => {
+const PrivateRoute = ({ children, allowedRoles }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" />;
-  if (user.role !== 'doctor') return <Navigate to="/" />;
+  if (!allowedRoles.includes(user.role)) return <Navigate to="/" />;
   return children;
 };
 
@@ -26,12 +27,27 @@ function App() {
           <Route 
             path="/doctor/dashboard" 
             element={
-              <PrivateRoute>
+              <PrivateRoute allowedRoles={['doctor']}>
                 <DoctorDashboard />
               </PrivateRoute>
             } 
           />
-          <Route path="/doctor/register" element={<DoctorRegistration />} />
+          <Route 
+            path="/doctor/register" 
+            element={
+              <PrivateRoute allowedRoles={['doctor']}>
+                <DoctorRegistration />
+              </PrivateRoute>
+            }
+          />
+          <Route 
+            path="/patient/dashboard" 
+            element={
+              <PrivateRoute allowedRoles={['patient']}>
+                <PatientDashboard />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </Router>
     </AuthProvider>
