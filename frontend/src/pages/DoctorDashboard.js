@@ -5,7 +5,7 @@ import {
   DialogActions, IconButton, CircularProgress, Stack, Divider, IconButton as MuiIconButton,
   List as MuiList, ListItem as MuiListItem, 
   ListItemSecondaryAction, Card, CardContent, CardHeader, Avatar, Chip,
-  useTheme, Tooltip, Badge, MenuItem 
+  useTheme, Tooltip, Badge, MenuItem, Alert 
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -16,12 +16,15 @@ import WorkIcon from '@mui/icons-material/Work';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
 import TimerIcon from '@mui/icons-material/Timer';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { parseISO, format } from 'date-fns';
+import { validateEmail } from '../utils/validation'; // You'll need to create this utility
 
 const DoctorDashboard = () => {
   const [doctorProfile, setDoctorProfile] = useState(null);
@@ -44,6 +47,19 @@ const DoctorDashboard = () => {
     startTime: null,
     endTime: null
   });
+
+  // Add new state for adding patient
+  const [showAddPatientDialog, setShowAddPatientDialog] = useState(false);
+  const [availablePatients, setAvailablePatients] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [addPatientError, setAddPatientError] = useState('');
+
+  // Add new states for patient search
+  const [searchEmail, setSearchEmail] = useState('');
+  const [searchResult, setSearchResult] = useState(null);
+  const [searchError, setSearchError] = useState('');
+  const [searchMode, setSearchMode] = useState(true); // true for search, false for manual add
 
   const fetchDoctorProfile = async () => {
     setIsLoading(true);
@@ -243,6 +259,95 @@ const DoctorDashboard = () => {
       console.error('Error deleting time slot:', error);
     }
   };
+
+  // Add new function to handle patient search
+  const handleSearchPatient = async () => {
+    if (!validateEmail(searchEmail)) {
+      setSearchError('Please enter a valid email address');
+      return;
+    }
+  
+    try {
+      const response = await fetch(`http://localhost:5000/api/doctors/search-patients?email=${searchEmail}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+  
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to search patient');
+      }
+  
+      setSearchResult(data);
+      setSearchError('');
+    } catch (error) {
+      setSearchError(error.message);
+      setSearchResult(null);
+    }
+  };
+
+  // Add new function to fetch patients
+  const fetchAvailablePatients = async (search = '') => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/doctors/search-patients?search=${search}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch patients');
+      }
+  
+      const data = await response.json();
+      setAvailablePatients(data);
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+    }
+  };
+
+  // Update handleAddPatient function
+  const handleAddPatient = async () => {
+    try {
+      if (!selectedPatient) {
+        setAddPatientError('Please select a patient first');
+        return;
+      }
+  
+      const response = await fetch('http://localhost:5000/api/doctors/patients', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ patientId: selectedPatient._id })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to add patient');
+      }
+  
+      const data = await response.json();
+      setDoctorProfile(prev => ({
+        ...prev,
+        patients: [...prev.patients, data.patient]
+      }));
+      setShowAddPatientDialog(false);
+      setSelectedPatient(null);
+      setSearchTerm('');
+    } catch (error) {
+      setAddPatientError(error.message);
+    }
+  };
+
+  // Add useEffect for fetching patients when dialog opens
+  useEffect(() => {
+    if (showAddPatientDialog) {
+      fetchAvailablePatients();
+    }
+  }, [showAddPatientDialog]);
 
   // Add logout handler
   const handleLogout = () => {
@@ -490,6 +595,15 @@ const DoctorDashboard = () => {
                     <GroupIcon sx={{ mr: 1 }} />
                     <Typography variant="h6">Patients</Typography>
                   </Box>
+                }
+                action={
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setShowAddPatientDialog(true)}
+                  >
+                    Add Patient
+                  </Button>
                 }
               />
               <CardContent>
@@ -838,6 +952,93 @@ const DoctorDashboard = () => {
           <DialogActions>
             <Button onClick={() => setShowSlotDialog(false)}>Cancel</Button>
             <Button onClick={handleSlotSubmit} variant="contained">Add</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Add Patient Dialog */}
+        <Dialog 
+          open={showAddPatientDialog} 
+          onClose={() => setShowAddPatientDialog(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>Add Patient</DialogTitle>
+          <DialogContent>
+            <Box sx={{ mt: 2 }}>
+              <TextField
+                fullWidth
+                label="Search Patients"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  fetchAvailablePatients(e.target.value);
+                }}
+                sx={{ mb: 2 }}
+                placeholder="Search by name or email"
+              />
+              
+              <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+                {availablePatients.map((patient) => {
+                  const isExisting = doctorProfile.patients.some(p => p._id === patient._id);
+                  
+                  return (
+                    <ListItem 
+                      key={patient._id}
+                      sx={{
+                        bgcolor: selectedPatient?._id === patient._id ? 'action.selected' : 'inherit',
+                        '&:hover': {
+                          bgcolor: 'action.hover',
+                        },
+                        opacity: isExisting ? 0.5 : 1
+                      }}
+                      button
+                      onClick={() => !isExisting && setSelectedPatient(patient)}
+                      disabled={isExisting}
+                    >
+                      <ListItemText
+                        primary={patient.name}
+                        secondary={patient.email}
+                      />
+                      {isExisting && (
+                        <Chip
+                          label="Already Added"
+                          size="small"
+                          color="primary"
+                          sx={{ ml: 1 }}
+                        />
+                      )}
+                    </ListItem>
+                  );
+                })}
+                {availablePatients.length === 0 && (
+                  <Typography color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>
+                    No patients found
+                  </Typography>
+                )}
+              </List>
+        
+              {addPatientError && (
+                <Typography color="error" sx={{ mt: 1 }}>
+                  {addPatientError}
+                </Typography>
+              )}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => {
+              setShowAddPatientDialog(false);
+              setSelectedPatient(null);
+              setSearchTerm('');
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAddPatient}
+              variant="contained"
+              disabled={!selectedPatient}
+            >
+              Add Patient
+            </Button>
           </DialogActions>
         </Dialog>
       </Container>

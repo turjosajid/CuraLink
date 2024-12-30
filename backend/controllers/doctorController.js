@@ -86,3 +86,58 @@ exports.getTimeSlots = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+exports.searchPatients = async (req, res) => {
+  try {
+    const { search } = req.query;
+    const query = { role: 'patient' };
+    
+    // Add search condition if search parameter exists
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const patients = await User.find(query)
+      .select('name email')
+      .sort({ name: 1 });
+
+    res.status(200).json(patients);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.addPatient = async (req, res) => {
+  try {
+    const { patientId } = req.body;
+
+    // Check if patient exists and is a patient
+    const patient = await User.findOne({ _id: patientId, role: 'patient' });
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    // Add patient to doctor's patient list
+    const doctor = await Doctor.findOne({ userId: req.user._id });
+    if (doctor.patients.includes(patientId)) {
+      return res.status(400).json({ message: 'Patient already added to your list' });
+    }
+
+    doctor.patients.push(patientId);
+    await doctor.save();
+
+    res.status(200).json({
+      message: 'Patient added successfully',
+      patient: {
+        id: patient._id,
+        name: patient.name,
+        email: patient.email
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
