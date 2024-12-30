@@ -342,6 +342,30 @@ const DoctorDashboard = () => {
     }
   };
 
+  // Add new function to handle patient removal
+  const handleRemovePatient = async (patientId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/doctors/patients/${patientId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to remove patient');
+      }
+  
+      setDoctorProfile(prev => ({
+        ...prev,
+        patients: prev.patients.filter(p => p._id !== patientId)
+      }));
+    } catch (error) {
+      console.error('Error removing patient:', error);
+    }
+  };
+
   // Add useEffect for fetching patients when dialog opens
   useEffect(() => {
     if (showAddPatientDialog) {
@@ -554,6 +578,9 @@ const DoctorDashboard = () => {
                           </Typography>
                         }
                       />
+                      <IconButton edge="end" onClick={() => handleRemoveEducation(index)}>
+                        <DeleteIcon />
+                      </IconButton>
                     </ListItem>
                   ))}
                 </List>
@@ -579,6 +606,9 @@ const DoctorDashboard = () => {
                           </Typography>
                         }
                       />
+                      <IconButton edge="end" onClick={() => handleRemoveCertificate(index)}>
+                        <DeleteIcon />
+                      </IconButton>
                     </ListItem>
                   ))}
                 </List>
@@ -622,6 +652,9 @@ const DoctorDashboard = () => {
                         primary={patient.name}
                         secondary={patient.email}
                       />
+                      <IconButton edge="end" onClick={() => handleRemovePatient(patient._id)}>
+                        <DeleteIcon />
+                      </IconButton>
                     </ListItem>
                   ))}
                 </List>
