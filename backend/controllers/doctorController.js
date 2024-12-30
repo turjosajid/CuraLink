@@ -141,3 +141,27 @@ exports.addPatient = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+exports.removePatient = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    // Check if patient exists and is a patient
+    const patient = await User.findOne({ _id: patientId, role: 'patient' });
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    // Remove patient from doctor's patient list
+    const doctor = await Doctor.findOne({ userId: req.user._id });
+    doctor.patients = doctor.patients.filter(p => p.toString() !== patientId);
+    await doctor.save();
+
+    res.status(200).json({
+      message: 'Patient removed successfully',
+      patientId
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
