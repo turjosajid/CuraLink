@@ -57,3 +57,32 @@ exports.updateDoctorProfile = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+exports.updateTimeSlots = async (req, res) => {
+  try {
+    const doctor = await Doctor.findOne({ userId: req.user._id });
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    doctor.timeSlots = req.body.timeSlots;
+    await doctor.save();
+
+    res.status(200).json({ timeSlots: doctor.timeSlots });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.getTimeSlots = async (req, res) => {
+  try {
+    const doctor = await Doctor.findOne({ userId: req.user._id });
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    res.status(200).json({ timeSlots: doctor.timeSlots });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};

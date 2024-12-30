@@ -5,7 +5,7 @@ import {
   DialogActions, IconButton, CircularProgress, Stack, Divider, IconButton as MuiIconButton,
   List as MuiList, ListItem as MuiListItem, 
   ListItemSecondaryAction, Card, CardContent, CardHeader, Avatar, Chip,
-  useTheme, Tooltip, Badge 
+  useTheme, Tooltip, Badge, MenuItem 
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -15,8 +15,13 @@ import SchoolIcon from '@mui/icons-material/School';
 import WorkIcon from '@mui/icons-material/Work';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
+import TimerIcon from '@mui/icons-material/Timer';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { parseISO, format } from 'date-fns';
 
 const DoctorDashboard = () => {
   const [doctorProfile, setDoctorProfile] = useState(null);
@@ -30,6 +35,15 @@ const DoctorDashboard = () => {
   // Add new state for education and certificates
   const [newEducation, setNewEducation] = useState({ degree: '', institute: '', year: '' });
   const [newCertificate, setNewCertificate] = useState({ name: '', issuer: '', year: '' });
+
+  // Add new state for time slots
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [showSlotDialog, setShowSlotDialog] = useState(false);
+  const [newSlot, setNewSlot] = useState({
+    day: 'Monday',
+    startTime: null,
+    endTime: null
+  });
 
   const fetchDoctorProfile = async () => {
     setIsLoading(true);
@@ -76,9 +90,24 @@ const DoctorDashboard = () => {
     }
   };
 
+  const fetchTimeSlots = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/doctors/time-slots', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      const data = await response.json();
+      setTimeSlots(data.timeSlots || []);
+    } catch (error) {
+      console.error('Error fetching time slots:', error);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       fetchDoctorProfile();
+      fetchTimeSlots();
     }
   }, [token]);
 
@@ -163,6 +192,56 @@ const DoctorDashboard = () => {
       ...prev,
       certificates: prev.certificates.filter((_, i) => i !== index)
     }));
+  };
+
+  // Handle time slot changes
+  const handleSlotSubmit = async () => {
+    if (!newSlot.startTime || !newSlot.endTime) return;
+
+    const formattedSlot = {
+      day: newSlot.day,
+      startTime: format(new Date(newSlot.startTime), 'HH:mm'),
+      endTime: format(new Date(newSlot.endTime), 'HH:mm'),
+      isAvailable: true
+    };
+
+    const updatedSlots = [...timeSlots, formattedSlot];
+
+    try {
+      await fetch('http://localhost:5000/api/doctors/time-slots', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ timeSlots: updatedSlots })
+      });
+
+      setTimeSlots(updatedSlots);
+      setShowSlotDialog(false);
+      setNewSlot({ day: 'Monday', startTime: null, endTime: null });
+    } catch (error) {
+      console.error('Error updating time slots:', error);
+    }
+  };
+
+  const handleDeleteSlot = async (index) => {
+    const updatedSlots = timeSlots.filter((_, i) => i !== index);
+    
+    try {
+      await fetch('http://localhost:5000/api/doctors/time-slots', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ timeSlots: updatedSlots })
+      });
+
+      setTimeSlots(updatedSlots);
+    } catch (error) {
+      console.error('Error deleting time slot:', error);
+    }
   };
 
   // Add logout handler
@@ -435,6 +514,47 @@ const DoctorDashboard = () => {
               </CardContent>
             </Card>
           </Grid>
+
+          {/* Appointment Slots */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardHeader 
+                title={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <TimerIcon sx={{ mr: 1 }} />
+                    <Typography variant="h6">Appointment Slots</Typography>
+                  </Box>
+                }
+                action={
+                  <Button
+                    variant="contained"
+                    onClick={() => setShowSlotDialog(true)}
+                  >
+                    Add Slot
+                  </Button>
+                }
+              />
+              <CardContent>
+                <List>
+                  {timeSlots.map((slot, index) => (
+                    <ListItem
+                      key={index}
+                      secondaryAction={
+                        <IconButton edge="end" onClick={() => handleDeleteSlot(index)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      }
+                    >
+                      <ListItemText
+                        primary={slot.day}
+                        secondary={`${slot.startTime} - ${slot.endTime}`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
 
         {/* Edit Dialog remains unchanged */}
@@ -677,6 +797,47 @@ const DoctorDashboard = () => {
           <DialogActions>
             <Button onClick={() => setIsEditing(false)}>Cancel</Button>
             <Button onClick={handleSave} variant="contained">Save</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Add Slot Dialog */}
+        <Dialog open={showSlotDialog} onClose={() => setShowSlotDialog(false)}>
+          <DialogTitle>Add Time Slot</DialogTitle>
+          <DialogContent>
+            <Box sx={{ mt: 2 }}>
+              <TextField
+                select
+                fullWidth
+                label="Day"
+                value={newSlot.day}
+                onChange={(e) => setNewSlot(prev => ({ ...prev, day: e.target.value }))}
+                sx={{ mb: 2 }}
+              >
+                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                  <MenuItem key={day} value={day}>
+                    {day}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <TimePicker
+                  label="Start Time"
+                  value={newSlot.startTime}
+                  onChange={(newValue) => setNewSlot(prev => ({ ...prev, startTime: newValue }))}
+                  slotProps={{ textField: { fullWidth: true, sx: { mb: 2 } } }}
+                />
+                <TimePicker
+                  label="End Time"
+                  value={newSlot.endTime}
+                  onChange={(newValue) => setNewSlot(prev => ({ ...prev, endTime: newValue }))}
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </LocalizationProvider>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowSlotDialog(false)}>Cancel</Button>
+            <Button onClick={handleSlotSubmit} variant="contained">Add</Button>
           </DialogActions>
         </Dialog>
       </Container>

@@ -1,5 +1,25 @@
 const mongoose = require('mongoose');
 
+const timeSlotSchema = new mongoose.Schema({
+  day: {
+    type: String,
+    required: true,
+    enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+  },
+  startTime: {
+    type: String,
+    required: true
+  },
+  endTime: {
+    type: String,
+    required: true
+  },
+  isAvailable: {
+    type: Boolean,
+    default: true
+  }
+});
+
 const doctorSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -54,7 +74,8 @@ const doctorSchema = new mongoose.Schema({
     state: String,
     country: String,
     zipCode: String
-  }
+  },
+  timeSlots: [timeSlotSchema]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Doctor', doctorSchema);
