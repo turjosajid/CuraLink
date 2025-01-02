@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { 
   Box, Container, Typography, Paper, Grid, Button, List, ListItem, 
-  ListItemText, CircularProgress, Avatar, Card, CardContent, CardHeader, Chip
+  ListItemText, CircularProgress, Avatar, Card, CardContent, CardHeader, Chip, Input, IconButton
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +14,7 @@ const PatientDashboard = () => {
   const [patientProfile, setPatientProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const { user, token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -38,6 +42,49 @@ const PatientDashboard = () => {
       setError('Failed to load patient profile. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setError('Only PDF files are allowed');
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      console.log('Uploading file:', file.name);
+      const response = await fetch('http://localhost:5000/api/patients/upload-report', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      console.log('Upload response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Upload failed');
+      }
+
+      setPatientProfile(prev => ({
+        ...prev,
+        medicalReports: [...(prev.medicalReports || []), data.report]
+      }));
+    } catch (error) {
+      console.error('Upload error details:', error);
+      setError(error.message || 'Failed to upload report');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -167,11 +214,45 @@ const PatientDashboard = () => {
           {/* Medical Reports */}
           <Grid item xs={12} md={6}>
             <Card>
-              <CardHeader title="Medical Reports" />
+              <CardHeader 
+                title="Medical Reports"
+                action={
+                  <>
+                    <Input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleFileUpload}
+                      style={{ display: 'none' }}
+                      id="upload-medical-report"
+                    />
+                    <label htmlFor="upload-medical-report">
+                      <Button
+                        component="span"
+                        startIcon={<UploadFileIcon />}
+                        variant="contained"
+                        disabled={uploading}
+                      >
+                        {uploading ? 'Uploading...' : 'Upload Report'}
+                      </Button>
+                    </label>
+                  </>
+                }
+              />
               <CardContent>
                 <List>
                   {patientProfile.medicalReports?.map((report, index) => (
-                    <ListItem key={index}>
+                    <ListItem
+                      key={index}
+                      secondaryAction={
+                        <IconButton
+                          edge="end"
+                          aria-label="view"
+                          onClick={() => window.open(report.reportUrl, '_blank')}
+                        >
+                          <VisibilityIcon />
+                        </IconButton>
+                      }
+                    >
                       <ListItemText
                         primary={report.reportName}
                         secondary={new Date(report.date).toLocaleDateString()}
