@@ -8,7 +8,7 @@ const patientSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
-        required: true
+        // required: true
     },
     appointments: [{
         date: {
