@@ -28,11 +28,13 @@ mongoose.connect(process.env.MONGO_URI, {
 const userRoutes = require('./routes/userRoutes');
 const doctorRoutes = require('./routes/doctorRoutes');
 const patientRoutes = require('./routes/patientRoutes');
+const pharmacistRoutes = require('./routes/pharmacistRoutes');
 
 // Use routes
 app.use('/api/users', userRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/patients', patientRoutes);
+app.use('/api/pharmacists', pharmacistRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

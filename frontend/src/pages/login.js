@@ -15,7 +15,13 @@ const LoginPage = () => {
     try {
       const response = await axios.post('http://localhost:5000/api/users/login', formData);
       login(response.data.token, response.data.user);
-      navigate(response.data.user.role === 'doctor' ? '/doctor/dashboard' : '/patient/dashboard');
+      if (response.data.user.role === 'doctor') {
+        navigate('/doctor/dashboard');
+      } else if (response.data.user.role === 'pharmacist') {
+        navigate('/pharmacist/dashboard');
+      } else {
+        navigate('/patient/dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred');
     }

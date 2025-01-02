@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
+const Pharmacist = require('../models/pharmacistModel');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -10,6 +11,11 @@ const signToken = (id) => {
 exports.register = async (req, res) => {
   try {
     const user = await User.create(req.body);
+
+    if (user.role === 'pharmacist') {
+      await Pharmacist.create({ userId: user._id });
+    }
+
     const token = signToken(user._id);
     res.status(201).json({ token, user });
   } catch (error) {

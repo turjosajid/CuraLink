@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import DoctorRegistration from './pages/DoctorRegistration';
 import PatientDashboard from './pages/PatientDashboard';
+import PharmacistDashboard from './pages/PharmacistDashboard';
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 // Protected Route Component
@@ -47,6 +48,14 @@ function App() {
                 <PatientDashboard />
               </PrivateRoute>
             }
+          />
+          <Route 
+            path="/pharmacist/dashboard" 
+            element={
+              <PrivateRoute allowedRoles={['pharmacist']}>
+                <PharmacistDashboard />
+              </PrivateRoute>
+            } 
           />
         </Routes>
       </Router>
