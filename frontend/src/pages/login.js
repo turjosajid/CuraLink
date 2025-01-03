@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Box, Button, Container, TextField, Typography, Alert } from '@mui/material';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
@@ -23,7 +23,7 @@ const LoginPage = () => {
 
   return (
     <Container maxWidth="xs">
-      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
         <Typography variant="h4" component="h1">Login</Typography>
         {error && <Alert severity="error" sx={{ mt: 2, width: '100%' }}>{error}</Alert>}
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
@@ -53,6 +53,9 @@ const LoginPage = () => {
           >
             Login
           </Button>
+          <Typography variant="body2" sx={{ mt: 2 }}>
+            Don't have an account? <Link to="/register">Sign up</Link>
+          </Typography>
         </Box>
       </Box>
     </Container>
