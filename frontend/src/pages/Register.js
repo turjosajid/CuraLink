@@ -25,10 +25,21 @@ const Register = () => {
       const data = await response.json();
       
       if (!response.ok) throw new Error(data.message);
-      
+
+      // Create patient document
+      await fetch('http://localhost:5000/api/patients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: data.user._id, phone: formData.phone, address: formData.address }),
+      });
+
       navigate('/login');
     } catch (err) {
-      setError(err.message);
+      if (err.message.includes('duplicate key error')) {
+        setError('Email already exists. Please use a different email.');
+      } else {
+        setError(err.message);
+      }
     }
   };
 

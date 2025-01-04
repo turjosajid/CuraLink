@@ -19,7 +19,11 @@ exports.register = async (req, res) => {
     const token = signToken(user._id);
     res.status(201).json({ token, user });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    if (error.code === 11000) {
+      res.status(400).json({ message: 'Email already exists. Please use a different email.' });
+    } else {
+      res.status(400).json({ message: error.message });
+    }
   }
 };
 
