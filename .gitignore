@@ -6,7 +6,7 @@ backend/node_modules
 backend/.env
 /.pnp
 .pnp.js
-
+backend/config/service-account.json
 # testing
 /coverage
 
