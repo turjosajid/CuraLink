@@ -473,7 +473,7 @@ const DoctorDashboard = () => {
     }}>
       <Container maxWidth="lg">
         {/* Header */}
-        <Card sx={{ mb: 4, p: 2, boxShadow: 'rgba(0, 0, 0, 0.25) 0px 25px 50px -12px' }}>
+        <Card sx={{ mb: 4, p: 2, boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
           <Box sx={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
@@ -525,7 +525,7 @@ const DoctorDashboard = () => {
         <Grid container spacing={3}>
           {/* Profile Information */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ boxShadow: 'rgba(0, 0, 0, 0.25) 0px 25px 50px -12px' }}>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
               <CardHeader 
                 title="Profile Information"
                 action={
@@ -588,7 +588,7 @@ const DoctorDashboard = () => {
 
           {/* Quick Stats */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ boxShadow: 'rgba(0, 0, 0, 0.25) 0px 25px 50px -12px' }}>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
               <CardHeader 
                 title="Quick Stats"
                 action={
@@ -628,7 +628,7 @@ const DoctorDashboard = () => {
 
           {/* Education & Certificates */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ boxShadow: 'rgba(0, 0, 0, 0.25) 0px 25px 50px -12px' }}>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
               <CardHeader 
                 title="Education & Certificates"
                 action={
@@ -703,7 +703,7 @@ const DoctorDashboard = () => {
 
           {/* Patients List */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ boxShadow: 'rgba(0, 0, 0, 0.25) 0px 25px 50px -12px' }}>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
               <CardHeader 
                 title={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -751,7 +751,7 @@ const DoctorDashboard = () => {
 
           {/* Appointment Slots */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ boxShadow: 'rgba(0, 0, 0, 0.25) 0px 25px 50px -12px' }}>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
               <CardHeader 
                 title={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -795,7 +795,7 @@ const DoctorDashboard = () => {
 
           {/* Upcoming Appointments */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ boxShadow: 'rgba(0, 0, 0, 0.25) 0px 25px 50px -12px' }}>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
               <CardHeader 
                 title={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
