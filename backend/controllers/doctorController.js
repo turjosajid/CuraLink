@@ -1,5 +1,6 @@
 const Doctor = require('../models/doctorModel');
 const User = require('../models/userModel');
+const Appointment = require('../models/appointmentModel'); // Assuming you have an Appointment model
 
 exports.registerDoctor = async (req, res) => {
   try {
@@ -161,6 +162,18 @@ exports.removePatient = async (req, res) => {
       message: 'Patient removed successfully',
       patientId
     });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.getUpcomingAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find({ doctorId: req.user._id, date: { $gte: new Date() } })
+      .populate('patientId', 'name')
+      .sort({ date: 1 });
+
+    res.status(200).json({ appointments });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

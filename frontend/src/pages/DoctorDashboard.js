@@ -18,6 +18,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import TimerIcon from '@mui/icons-material/Timer';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -60,6 +61,9 @@ const DoctorDashboard = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [searchError, setSearchError] = useState('');
   const [searchMode, setSearchMode] = useState(true); // true for search, false for manual add
+
+  // Add new state for upcoming appointments
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
 
   const fetchDoctorProfile = async () => {
     setIsLoading(true);
@@ -120,10 +124,25 @@ const DoctorDashboard = () => {
     }
   };
 
+  const fetchUpcomingAppointments = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/doctors/appointments', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      const data = await response.json();
+      setUpcomingAppointments(data.appointments || []);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       fetchDoctorProfile();
       fetchTimeSlots();
+      fetchUpcomingAppointments();
     }
   }, [token]);
 
@@ -695,6 +714,32 @@ const DoctorDashboard = () => {
                       <ListItemText
                         primary={slot.day}
                         secondary={`${slot.startTime} - ${slot.endTime}`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Upcoming Appointments */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardHeader 
+                title={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <CalendarTodayIcon sx={{ mr: 1 }} />
+                    <Typography variant="h6">Upcoming Appointments</Typography>
+                  </Box>
+                }
+              />
+              <CardContent>
+                <List>
+                  {upcomingAppointments.map((appointment, index) => (
+                    <ListItem key={index}>
+                      <ListItemText
+                        primary={`${appointment.patientName} - ${appointment.date}`}
+                        secondary={`${appointment.startTime} - ${appointment.endTime}`}
                       />
                     </ListItem>
                   ))}
