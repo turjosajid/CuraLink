@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerDoctor, getDoctorProfile, updateDoctorProfile, updateTimeSlots, getTimeSlots, addPatient, searchPatients, removePatient, getUpcomingAppointments } = require('../controllers/doctorController');
+const { registerDoctor, getDoctorProfile, updateDoctorProfile, updateTimeSlots, getTimeSlots, addPatient, searchPatients, removePatient, getUpcomingAppointments, toggleAvailability } = require('../controllers/doctorController');
 const { protect, restrictTo } = require('../middleware/auth');
 
 const router = express.Router();
@@ -16,5 +16,6 @@ router.get('/search-patients', searchPatients); // Add this new route
 router.post('/patients', addPatient);
 router.delete('/patients/:patientId', removePatient); // Add this new route
 router.get('/appointments', getUpcomingAppointments); // Add this new route
+router.patch('/availability', toggleAvailability); // Add this new route
 
 module.exports = router;

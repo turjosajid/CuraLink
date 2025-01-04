@@ -178,3 +178,19 @@ exports.getUpcomingAppointments = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+exports.toggleAvailability = async (req, res) => {
+  try {
+    const doctor = await Doctor.findOne({ userId: req.user._id });
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    doctor.isAvailable = req.body.isAvailable;
+    await doctor.save();
+
+    res.status(200).json({ isAvailable: doctor.isAvailable });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};

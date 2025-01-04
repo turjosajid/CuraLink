@@ -5,7 +5,7 @@ import {
   DialogActions, IconButton, CircularProgress, Stack, Divider, IconButton as MuiIconButton,
   List as MuiList, ListItem as MuiListItem, 
   ListItemSecondaryAction, Card, CardContent, CardHeader, Avatar, Chip,
-  useTheme, Tooltip, Badge, MenuItem, Alert 
+  useTheme, Tooltip, Badge, MenuItem, Alert, Switch 
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -64,6 +64,7 @@ const DoctorDashboard = () => {
 
   // Add new state for upcoming appointments
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [isAvailable, setIsAvailable] = useState(false);
 
   const fetchDoctorProfile = async () => {
     setIsLoading(true);
@@ -98,6 +99,7 @@ const DoctorDashboard = () => {
       }
 
       setDoctorProfile(data);
+      setIsAvailable(data.isAvailable);
     } catch (error) {
       console.error('Error fetching profile:', error);
       setError({
@@ -398,6 +400,25 @@ const DoctorDashboard = () => {
     navigate('/login');
   };
 
+  const handleToggleAvailability = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/doctors/availability', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isAvailable: !isAvailable })
+      });
+
+      if (!response.ok) throw new Error('Failed to update availability');
+
+      setIsAvailable(!isAvailable);
+    } catch (error) {
+      console.error('Error updating availability:', error);
+    }
+  };
+
   if (isLoading) return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
       <CircularProgress />
@@ -469,6 +490,12 @@ const DoctorDashboard = () => {
               </Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>
+              <Switch
+                checked={isAvailable}
+                onChange={handleToggleAvailability}
+                color="primary"
+              />
+              <Typography>{isAvailable ? 'Available' : 'Not Available'}</Typography>
               <Button
                 variant="contained"
                 startIcon={<EditIcon />}
