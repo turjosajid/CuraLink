@@ -365,6 +365,7 @@ const DoctorDashboard = () => {
       setShowAddPatientDialog(false);
       setSelectedPatient(null);
       setSearchTerm('');
+      fetchDoctorProfile(); // Reload the patients card
     } catch (error) {
       setAddPatientError(error.message);
     }
@@ -638,7 +639,7 @@ const DoctorDashboard = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Typography variant="h4" color="primary">
-                        ${doctorProfile.fees}
+                      ৳ {doctorProfile.fees}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Consultation Fee
