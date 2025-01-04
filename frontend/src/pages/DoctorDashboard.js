@@ -834,6 +834,14 @@ const DoctorDashboard = () => {
                       </ListItem>
                     ))}
                   </List>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setShowSlotDialog(true)}
+                    sx={{ mt: 2 }}
+                  >
+                    Add Slot
+                  </Button>
                 </CardContent>
               </Collapse>
             </Card>
