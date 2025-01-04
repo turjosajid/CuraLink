@@ -373,6 +373,10 @@ const DoctorDashboard = () => {
   // Add new function to handle patient removal
   const handleRemovePatient = async (patientId) => {
     try {
+      if (!patientId) {
+        throw new Error('Patient ID is required');
+      }
+
       const response = await fetch(`http://localhost:5000/api/doctors/patients/${patientId}`, {
         method: 'DELETE',
         headers: {
@@ -423,6 +427,34 @@ const DoctorDashboard = () => {
       setIsAvailable(!isAvailable);
     } catch (error) {
       console.error('Error updating availability:', error);
+    }
+  };
+
+  const [selectedPatientReports, setSelectedPatientReports] = useState([]);
+  const [showReportsDialog, setShowReportsDialog] = useState(false);
+
+  const fetchMedicalReports = async (patientId) => {
+    try {
+      if (!patientId) {
+        throw new Error('Patient ID is required');
+      }
+
+      const response = await fetch(`http://localhost:5000/api/doctors/patients/${patientId}/medical-reports`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch medical reports');
+      }
+
+      setSelectedPatientReports(data.medicalReports);
+      console.log('Fetched medical reports:', data.medicalReports); // Log the fetched reports
+      setShowReportsDialog(true);
+    } catch (error) {
+      console.error('Error fetching medical reports:', error);
     }
   };
 
@@ -560,9 +592,9 @@ const DoctorDashboard = () => {
                         Languages
                       </Typography>
                       <Box sx={{ mt: 1, mb: 2 }}>
-                        {doctorProfile.languages?.map((lang) => (
+                        {doctorProfile.languages?.map((lang, index) => (
                           <Chip 
-                            key={lang} 
+                            key={index} 
                             label={lang} 
                             sx={{ mr: 1, mb: 1 }} 
                             size="small"
@@ -738,12 +770,26 @@ const DoctorDashboard = () => {
                           primary={patient.name}
                           secondary={patient.email}
                         />
+                        <Button
+                          variant="outlined"
+                          onClick={() => fetchMedicalReports(patient._id)}
+                        >
+                          View Reports
+                        </Button>
                         <IconButton edge="end" onClick={() => handleRemovePatient(patient._id)}>
                           <DeleteIcon />
                         </IconButton>
                       </ListItem>
                     ))}
                   </List>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setShowAddPatientDialog(true)}
+                    sx={{ mt: 2 }}
+                  >
+                    Add Patient
+                  </Button>
                 </CardContent>
               </Collapse>
             </Card>
@@ -819,7 +865,7 @@ const DoctorDashboard = () => {
                     {upcomingAppointments.map((appointment, index) => (
                       <ListItem key={index}>
                         <ListItemText
-                          primary={`${appointment.patientName} - ${appointment.date}`}
+                          primary={`${appointment.patientId.name} - ${new Date(appointment.date).toLocaleDateString()}`}
                           secondary={`${appointment.startTime} - ${appointment.endTime}`}
                         />
                       </ListItem>
@@ -1199,6 +1245,39 @@ const DoctorDashboard = () => {
             >
               Add Patient
             </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* View Reports Dialog */}
+        <Dialog 
+          open={showReportsDialog} 
+          onClose={() => setShowReportsDialog(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>Medical Reports</DialogTitle>
+          <DialogContent>
+            <Box sx={{ mt: 2 }}>
+              <List>
+                {selectedPatientReports.map((report, index) => (
+                  <ListItem key={index}>
+                    <ListItemText
+                      primary={report.reportName}
+                      
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={() => window.open(report.reportUrl, '_blank')}
+                    >
+                      Open Report
+                    </Button>
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowReportsDialog(false)}>Close</Button>
           </DialogActions>
         </Dialog>
       </Container>

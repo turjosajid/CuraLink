@@ -1,6 +1,7 @@
 const Doctor = require('../models/doctorModel');
 const User = require('../models/userModel');
 const Appointment = require('../models/appointmentModel'); // Assuming you have an Appointment model
+const Patient = require('../models/patientModel'); // Add this import
 
 exports.registerDoctor = async (req, res) => {
   try {
@@ -190,6 +191,28 @@ exports.toggleAvailability = async (req, res) => {
     await doctor.save();
 
     res.status(200).json({ isAvailable: doctor.isAvailable });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.getMedicalReports = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    // Check if the patient is added to the doctor's list
+    const doctor = await Doctor.findOne({ userId: req.user._id });
+    if (!doctor.patients.includes(patientId)) {
+      return res.status(403).json({ message: 'Patient not found in your list' });
+    }
+
+    // Fetch medical reports of the patient
+    const patient = await Patient.findOne({ userId: patientId }).select('medicalReports');
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    res.status(200).json({ medicalReports: patient.medicalReports });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
