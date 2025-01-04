@@ -5,7 +5,7 @@ import {
   DialogActions, IconButton, CircularProgress, Stack, Divider, IconButton as MuiIconButton,
   List as MuiList, ListItem as MuiListItem, 
   ListItemSecondaryAction, Card, CardContent, CardHeader, Avatar, Chip,
-  useTheme, Tooltip, Badge, MenuItem, Alert 
+  useTheme, Tooltip, Badge, MenuItem, Alert, Switch, Collapse 
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -18,6 +18,8 @@ import GroupIcon from '@mui/icons-material/Group';
 import TimerIcon from '@mui/icons-material/Timer';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -61,6 +63,16 @@ const DoctorDashboard = () => {
   const [searchError, setSearchError] = useState('');
   const [searchMode, setSearchMode] = useState(true); // true for search, false for manual add
 
+  // Add new state for upcoming appointments
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [isAvailable, setIsAvailable] = useState(false);
+
+  const [expanded, setExpanded] = useState({});
+
+  const handleExpandClick = (card) => {
+    setExpanded((prev) => ({ ...prev, [card]: !prev[card] }));
+  };
+
   const fetchDoctorProfile = async () => {
     setIsLoading(true);
     setError(null);
@@ -94,6 +106,7 @@ const DoctorDashboard = () => {
       }
 
       setDoctorProfile(data);
+      setIsAvailable(data.isAvailable);
     } catch (error) {
       console.error('Error fetching profile:', error);
       setError({
@@ -120,10 +133,25 @@ const DoctorDashboard = () => {
     }
   };
 
+  const fetchUpcomingAppointments = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/doctors/appointments', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      const data = await response.json();
+      setUpcomingAppointments(data.appointments || []);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       fetchDoctorProfile();
       fetchTimeSlots();
+      fetchUpcomingAppointments();
     }
   }, [token]);
 
@@ -379,6 +407,25 @@ const DoctorDashboard = () => {
     navigate('/login');
   };
 
+  const handleToggleAvailability = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/doctors/availability', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isAvailable: !isAvailable })
+      });
+
+      if (!response.ok) throw new Error('Failed to update availability');
+
+      setIsAvailable(!isAvailable);
+    } catch (error) {
+      console.error('Error updating availability:', error);
+    }
+  };
+
   if (isLoading) return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
       <CircularProgress />
@@ -426,7 +473,7 @@ const DoctorDashboard = () => {
     }}>
       <Container maxWidth="lg">
         {/* Header */}
-        <Card sx={{ mb: 4, p: 2 }}>
+        <Card sx={{ mb: 4, p: 2, boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
           <Box sx={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
@@ -450,6 +497,12 @@ const DoctorDashboard = () => {
               </Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>
+              <Switch
+                checked={isAvailable}
+                onChange={handleToggleAvailability}
+                color="primary"
+              />
+              <Typography>{isAvailable ? 'Available' : 'Not Available'}</Typography>
               <Button
                 variant="contained"
                 startIcon={<EditIcon />}
@@ -471,154 +524,186 @@ const DoctorDashboard = () => {
 
         <Grid container spacing={3}>
           {/* Profile Information */}
-          <Grid item xs={12} md={8}>
-            <Card>
-              <CardHeader title="Profile Information" />
-              <CardContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <WorkIcon sx={{ mr: 1, color: 'primary.main' }} />
-                      <Typography>Experience: {doctorProfile.experience} years</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <SchoolIcon sx={{ mr: 1, color: 'primary.main' }} />
-                      <Typography>License: {doctorProfile.license}</Typography>
-                    </Box>
-                    <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2 }}>
-                      About
-                    </Typography>
-                    <Typography paragraph>{doctorProfile.about}</Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Languages
-                    </Typography>
-                    <Box sx={{ mt: 1, mb: 2 }}>
-                      {doctorProfile.languages?.map((lang) => (
-                        <Chip 
-                          key={lang} 
-                          label={lang} 
-                          sx={{ mr: 1, mb: 1 }} 
-                          size="small"
-                        />
-                      ))}
-                    </Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Address
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mt: 1 }}>
-                      <LocationOnIcon sx={{ mr: 1, color: 'primary.main' }} />
-                      <Typography>
-                        {`${doctorProfile.address?.street}, ${doctorProfile.address?.city}`}<br />
-                        {`${doctorProfile.address?.state}, ${doctorProfile.address?.country}`}
+          <Grid item xs={12} md={6}>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
+              <CardHeader 
+                title="Profile Information"
+                action={
+                  <IconButton
+                    onClick={() => handleExpandClick('profile')}
+                    aria-expanded={expanded.profile}
+                    aria-label="show more"
+                  >
+                    <ExpandMoreIcon />
+                  </IconButton>
+                }
+              />
+              <Collapse in={expanded.profile} timeout="auto" unmountOnExit>
+                <CardContent>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <WorkIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography>Experience: {doctorProfile.experience} years</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <SchoolIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography>License: {doctorProfile.license}</Typography>
+                      </Box>
+                      <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2 }}>
+                        About
                       </Typography>
-                    </Box>
+                      <Typography paragraph>{doctorProfile.about}</Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Languages
+                      </Typography>
+                      <Box sx={{ mt: 1, mb: 2 }}>
+                        {doctorProfile.languages?.map((lang) => (
+                          <Chip 
+                            key={lang} 
+                            label={lang} 
+                            sx={{ mr: 1, mb: 1 }} 
+                            size="small"
+                          />
+                        ))}
+                      </Box>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Address
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', mt: 1 }}>
+                        <LocationOnIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography>
+                          {`${doctorProfile.address?.street}, ${doctorProfile.address?.city}`}<br />
+                          {`${doctorProfile.address?.state}, ${doctorProfile.address?.country}`}
+                        </Typography>
+                      </Box>
+                    </Grid>
                   </Grid>
-                </Grid>
-              </CardContent>
+                </CardContent>
+              </Collapse>
             </Card>
           </Grid>
 
           {/* Quick Stats */}
-          <Grid item xs={12} md={4}>
-            <Card>
-              <CardHeader title="Quick Stats" />
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" color="primary">
-                      ${doctorProfile.fees}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Consultation Fee
-                    </Typography>
-                  </Box>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" color="primary">
-                      {doctorProfile.patients?.length || 0}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Patients
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Update Education & Certificates Card */}
           <Grid item xs={12} md={6}>
-            <Card>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
               <CardHeader 
-                title="Education & Certificates"
+                title="Quick Stats"
                 action={
-                  <IconButton onClick={handleEdit}>
-                    <EditIcon />
+                  <IconButton
+                    onClick={() => handleExpandClick('stats')}
+                    aria-expanded={expanded.stats}
+                    aria-label="show more"
+                  >
+                    <ExpandMoreIcon />
                   </IconButton>
                 }
               />
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  <SchoolIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  Education
-                </Typography>
-                <List>
-                  {doctorProfile.education?.map((edu, index) => (
-                    <ListItem key={index}>
-                      <ListItemText
-                        primary={
-                          <Typography variant="subtitle1">
-                            {edu.degree}
-                          </Typography>
-                        }
-                        secondary={
-                          <Typography variant="body2" color="text.secondary">
-                            {`${edu.institute} - ${edu.year}`}
-                          </Typography>
-                        }
-                      />
-                      <IconButton edge="end" onClick={() => handleRemoveEducation(index)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItem>
-                  ))}
-                </List>
+              <Collapse in={expanded.stats} timeout="auto" unmountOnExit>
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary">
+                        ${doctorProfile.fees}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Consultation Fee
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary">
+                        {doctorProfile.patients?.length || 0}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Patients
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Collapse>
+            </Card>
+          </Grid>
 
-                <Divider sx={{ my: 2 }} />
+          {/* Education & Certificates */}
+          <Grid item xs={12} md={6}>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
+              <CardHeader 
+                title="Education & Certificates"
+                action={
+                  <IconButton
+                    onClick={() => handleExpandClick('education')}
+                    aria-expanded={expanded.education}
+                    aria-label="show more"
+                  >
+                    <ExpandMoreIcon />
+                  </IconButton>
+                }
+              />
+              <Collapse in={expanded.education} timeout="auto" unmountOnExit>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    <SchoolIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    Education
+                  </Typography>
+                  <List>
+                    {doctorProfile.education?.map((edu, index) => (
+                      <ListItem key={index}>
+                        <ListItemText
+                          primary={
+                            <Typography variant="subtitle1">
+                              {edu.degree}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography variant="body2" color="text.secondary">
+                              {`${edu.institute} - ${edu.year}`}
+                            </Typography>
+                          }
+                        />
+                        <IconButton edge="end" onClick={() => handleRemoveEducation(index)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </ListItem>
+                    ))}
+                  </List>
 
-                <Typography variant="h6" gutterBottom>
-                  <WorkIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  Certificates
-                </Typography>
-                <List>
-                  {doctorProfile.certificates?.map((cert, index) => (
-                    <ListItem key={index}>
-                      <ListItemText
-                        primary={
-                          <Typography variant="subtitle1">
-                            {cert.name}
-                          </Typography>
-                        }
-                        secondary={
-                          <Typography variant="body2" color="text.secondary">
-                            {`${cert.issuer} - ${cert.year}`}
-                          </Typography>
-                        }
-                      />
-                      <IconButton edge="end" onClick={() => handleRemoveCertificate(index)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItem>
-                  ))}
-                </List>
-              </CardContent>
+                  <Divider sx={{ my: 2 }} />
+
+                  <Typography variant="h6" gutterBottom>
+                    <WorkIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    Certificates
+                  </Typography>
+                  <List>
+                    {doctorProfile.certificates?.map((cert, index) => (
+                      <ListItem key={index}>
+                        <ListItemText
+                          primary={
+                            <Typography variant="subtitle1">
+                              {cert.name}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography variant="body2" color="text.secondary">
+                              {`${cert.issuer} - ${cert.year}`}
+                            </Typography>
+                          }
+                        />
+                        <IconButton edge="end" onClick={() => handleRemoveCertificate(index)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Collapse>
             </Card>
           </Grid>
 
           {/* Patients List */}
           <Grid item xs={12} md={6}>
-            <Card>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
               <CardHeader 
                 title={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -627,44 +712,46 @@ const DoctorDashboard = () => {
                   </Box>
                 }
                 action={
-                  <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => setShowAddPatientDialog(true)}
+                  <IconButton
+                    onClick={() => handleExpandClick('patients')}
+                    aria-expanded={expanded.patients}
+                    aria-label="show more"
                   >
-                    Add Patient
-                  </Button>
+                    <ExpandMoreIcon />
+                  </IconButton>
                 }
               />
-              <CardContent>
-                <List>
-                  {doctorProfile.patients.map((patient) => (
-                    <ListItem 
-                      key={patient._id}
-                      sx={{
-                        '&:hover': {
-                          backgroundColor: 'action.hover',
-                          borderRadius: 1
-                        }
-                      }}
-                    >
-                      <ListItemText 
-                        primary={patient.name}
-                        secondary={patient.email}
-                      />
-                      <IconButton edge="end" onClick={() => handleRemovePatient(patient._id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItem>
-                  ))}
-                </List>
-              </CardContent>
+              <Collapse in={expanded.patients} timeout="auto" unmountOnExit>
+                <CardContent>
+                  <List>
+                    {doctorProfile.patients.map((patient) => (
+                      <ListItem 
+                        key={patient._id}
+                        sx={{
+                          '&:hover': {
+                            backgroundColor: 'action.hover',
+                            borderRadius: 1
+                          }
+                        }}
+                      >
+                        <ListItemText 
+                          primary={patient.name}
+                          secondary={patient.email}
+                        />
+                        <IconButton edge="end" onClick={() => handleRemovePatient(patient._id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Collapse>
             </Card>
           </Grid>
 
           {/* Appointment Slots */}
           <Grid item xs={12} md={6}>
-            <Card>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
               <CardHeader 
                 title={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -673,33 +760,73 @@ const DoctorDashboard = () => {
                   </Box>
                 }
                 action={
-                  <Button
-                    variant="contained"
-                    onClick={() => setShowSlotDialog(true)}
+                  <IconButton
+                    onClick={() => handleExpandClick('slots')}
+                    aria-expanded={expanded.slots}
+                    aria-label="show more"
                   >
-                    Add Slot
-                  </Button>
+                    <ExpandMoreIcon />
+                  </IconButton>
                 }
               />
-              <CardContent>
-                <List>
-                  {timeSlots.map((slot, index) => (
-                    <ListItem
-                      key={index}
-                      secondaryAction={
-                        <IconButton edge="end" onClick={() => handleDeleteSlot(index)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemText
-                        primary={slot.day}
-                        secondary={`${slot.startTime} - ${slot.endTime}`}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </CardContent>
+              <Collapse in={expanded.slots} timeout="auto" unmountOnExit>
+                <CardContent>
+                  <List>
+                    {timeSlots.map((slot, index) => (
+                      <ListItem
+                        key={index}
+                        secondaryAction={
+                          <IconButton edge="end" onClick={() => handleDeleteSlot(index)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        }
+                      >
+                        <ListItemText
+                          primary={slot.day}
+                          secondary={`${slot.startTime} - ${slot.endTime}`}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Collapse>
+            </Card>
+          </Grid>
+
+          {/* Upcoming Appointments */}
+          <Grid item xs={12} md={6}>
+            <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
+              <CardHeader 
+                title={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <CalendarTodayIcon sx={{ mr: 1 }} />
+                    <Typography variant="h6">Upcoming Appointments</Typography>
+                  </Box>
+                }
+                action={
+                  <IconButton
+                    onClick={() => handleExpandClick('appointments')}
+                    aria-expanded={expanded.appointments}
+                    aria-label="show more"
+                  >
+                    <ExpandMoreIcon />
+                  </IconButton>
+                }
+              />
+              <Collapse in={expanded.appointments} timeout="auto" unmountOnExit>
+                <CardContent>
+                  <List>
+                    {upcomingAppointments.map((appointment, index) => (
+                      <ListItem key={index}>
+                        <ListItemText
+                          primary={`${appointment.patientName} - ${appointment.date}`}
+                          secondary={`${appointment.startTime} - ${appointment.endTime}`}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Collapse>
             </Card>
           </Grid>
         </Grid>

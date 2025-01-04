@@ -75,7 +75,11 @@ const doctorSchema = new mongoose.Schema({
     country: String,
     zipCode: String
   },
-  timeSlots: [timeSlotSchema]
+  timeSlots: [timeSlotSchema],
+  isAvailable: {
+    type: Boolean,
+    default: false
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Doctor', doctorSchema);
