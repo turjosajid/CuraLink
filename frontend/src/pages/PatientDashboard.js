@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { 
   Box, Container, Typography, Paper, Grid, Button, List, ListItem, 
-  ListItemText, CircularProgress, Avatar, Card, CardContent, CardHeader, Chip
+  ListItemText, CircularProgress, Avatar, Card, CardContent, CardHeader, Chip, TextField, Alert, Link
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { AuthContext } from '../context/AuthContext';
@@ -11,6 +11,9 @@ const PatientDashboard = () => {
   const [patientProfile, setPatientProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [reportFile, setReportFile] = useState(null);
+  const [reportName, setReportName] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState(''); // Add state for selected file name
   const { user, token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -50,6 +53,49 @@ const PatientDashboard = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleFileChange = (e) => {
+    setReportFile(e.target.files[0]);
+    setSelectedFileName(e.target.files[0]?.name || ''); // Update selected file name
+  };
+
+  const handleUploadReport = async () => {
+    if (!reportFile || !reportName) {
+      setError('Please provide a report name and select a file.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('report', reportFile);
+    formData.append('reportName', reportName);
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/patients/${patientProfile._id}/reports`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to upload report');
+      }
+
+      setPatientProfile((prevProfile) => ({
+        ...prevProfile,
+        medicalReports: [...prevProfile.medicalReports, data]
+      }));
+      setReportFile(null);
+      setReportName('');
+      setSelectedFileName(''); // Reset selected file name
+    } catch (error) {
+      console.error('Error uploading report:', error);
+      setError('Failed to upload report. Please try again.');
+    }
   };
 
   if (isLoading) return (
@@ -176,9 +222,49 @@ const PatientDashboard = () => {
                         primary={report.reportName}
                         secondary={new Date(report.date).toLocaleDateString()}
                       />
+                      <Link href={report.reportUrl} target="_blank" rel="noopener noreferrer">
+                        View Report
+                      </Link>
                     </ListItem>
                   ))}
                 </List>
+                {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+                <Box sx={{ mt: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Report Name"
+                    value={reportName}
+                    onChange={(e) => setReportName(e.target.value)}
+                    sx={{ mb: 2 }}
+                  />
+                  <Button
+                    variant="contained"
+                    component="label"
+                    fullWidth
+                  >
+                    Select PDF File
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      hidden
+                      onChange={handleFileChange}
+                    />
+                  </Button>
+                  {selectedFileName && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Selected file: {selectedFileName}
+                    </Typography>
+                  )}
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    sx={{ mt: 2 }}
+                    onClick={handleUploadReport}
+                  >
+                    Upload Report
+                  </Button>
+                </Box>
               </CardContent>
             </Card>
           </Grid>

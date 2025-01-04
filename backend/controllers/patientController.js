@@ -1,4 +1,5 @@
 const Patient = require('../models/patientModel');
+const { uploadFile } = require('../utils/googleDrive'); // Import uploadFile utility
 
 // Create a new patient
 exports.createPatient = async (req, res) => {
@@ -112,5 +113,44 @@ exports.getProfile = async (req, res) => {
             message: 'Error fetching profile',
             error: error.message 
         });
+    }
+};
+
+// Upload medical report
+exports.uploadMedicalReport = async (req, res) => {
+    try {
+        console.log('Received file upload request'); // Log request received
+
+        const patient = await Patient.findById(req.params.id);
+        if (!patient) {
+            return res.status(404).send({ message: 'Patient not found' });
+        }
+
+        if (!req.file) {
+            return res.status(400).send({ message: 'No file uploaded' });
+        }
+
+        console.log('File received:', req.file); // Log file details
+
+        const fileBuffer = req.file.buffer;
+        const fileName = `${req.params.id}-${Date.now()}.pdf`;
+
+        const uploadResult = await uploadFile(fileBuffer, fileName);
+
+        console.log('File uploaded to Google Drive:', uploadResult); // Log upload result
+
+        const newReport = {
+            reportName: req.body.reportName,
+            reportUrl: uploadResult.webViewLink,
+            date: new Date()
+        };
+
+        patient.medicalReports.push(newReport);
+        await patient.save();
+
+        res.status(201).send(newReport);
+    } catch (error) {
+        console.error('Error uploading report:', error); // Add detailed error logging
+        res.status(500).send({ message: 'Error uploading report', error: error.message });
     }
 };
