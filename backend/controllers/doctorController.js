@@ -227,3 +227,23 @@ exports.getMedicalReports = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+exports.deleteAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+
+    // Check if the appointment exists
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // Delete the appointment
+    await Appointment.findByIdAndDelete(appointmentId);
+
+    res.status(200).json({ message: "Appointment deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting appointment:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

@@ -586,6 +586,31 @@ const DoctorDashboard = () => {
     }
   };
 
+  const handleCancelAppointment = async (appointmentId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/doctors/appointments/${appointmentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to cancel appointment");
+      }
+
+      setUpcomingAppointments((prev) =>
+        prev.filter((appointment) => appointment._id !== appointmentId)
+      );
+    } catch (error) {
+      console.error("Error cancelling appointment:", error);
+    }
+  };
+
   if (isLoading)
     return (
       <ThemeProvider theme={theme}>
@@ -1194,6 +1219,14 @@ const DoctorDashboard = () => {
                               ).toLocaleDateString()}`}
                               secondary={`${appointment.startTime} - ${appointment.endTime}`}
                             />
+                            <IconButton
+                              edge="end"
+                              onClick={() =>
+                                handleCancelAppointment(appointment._id)
+                              }
+                            >
+                              <DeleteIcon />
+                            </IconButton>
                           </ListItem>
                         ))}
                       </List>
