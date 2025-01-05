@@ -1,7 +1,9 @@
 const Doctor = require("../models/doctorModel");
 const User = require("../models/userModel");
-const Appointment = require("../models/appointmentModel"); // Assuming you have an Appointment model
-const Patient = require("../models/patientModel"); // Add this import
+
+const Appointment = require("../models/appointmentModel");
+const Patient = require("../models/patientModel");
+
 
 exports.registerDoctor = async (req, res) => {
   try {
@@ -23,7 +25,8 @@ exports.getDoctorProfile = async (req, res) => {
       .populate("patients", "name email");
 
     if (!doctor) {
-      // Check if user is a doctor but profile not created
+
+
       if (req.user.role === "doctor") {
         return res.status(404).json({
           message: "Doctor profile not found. Please complete registration.",
@@ -36,10 +39,12 @@ exports.getDoctorProfile = async (req, res) => {
       });
     }
 
+
     console.log("Doctor profile found:", doctor); // Debug log
     res.status(200).json(doctor);
   } catch (error) {
     console.error("Error in getDoctorProfile:", error); // Debug log
+
     res.status(500).json({
       message: "Error fetching doctor profile",
       error: error.message,
@@ -94,7 +99,7 @@ exports.searchPatients = async (req, res) => {
     const { search } = req.query;
     const query = { role: "patient" };
 
-    // Add search condition if search parameter exists
+
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: "i" } },
@@ -116,13 +121,12 @@ exports.addPatient = async (req, res) => {
   try {
     const { patientId } = req.body;
 
-    // Check if patient exists and is a patient
+
     const patient = await User.findOne({ _id: patientId, role: "patient" });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    // Add patient to doctor's patient list
     const doctor = await Doctor.findOne({ userId: req.user._id });
     if (doctor.patients.includes(patientId)) {
       return res
@@ -150,13 +154,12 @@ exports.removePatient = async (req, res) => {
   try {
     const { patientId } = req.params;
 
-    // Check if patient exists and is a patient
+
     const patient = await User.findOne({ _id: patientId, role: "patient" });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    // Remove patient from doctor's patient list
     const doctor = await Doctor.findOne({ userId: req.user._id });
     doctor.patients = doctor.patients.filter((p) => p.toString() !== patientId);
     await doctor.save();
@@ -172,9 +175,11 @@ exports.removePatient = async (req, res) => {
 
 exports.getUpcomingAppointments = async (req, res) => {
   try {
+
     const doctorId = req.query.doctorId;
     const appointments = await Appointment.find({
       doctorId,
+
       date: { $gte: new Date() },
     })
       .populate("patientId", "name")
@@ -206,7 +211,8 @@ exports.getMedicalReports = async (req, res) => {
   try {
     const { patientId } = req.params;
 
-    // Check if the patient is added to the doctor's list
+
+
     const doctor = await Doctor.findOne({ userId: req.user._id });
     if (!doctor.patients.includes(patientId)) {
       return res
@@ -214,7 +220,7 @@ exports.getMedicalReports = async (req, res) => {
         .json({ message: "Patient not found in your list" });
     }
 
-    // Fetch medical reports of the patient
+
     const patient = await Patient.findOne({ userId: patientId }).select(
       "medicalReports"
     );
@@ -227,6 +233,17 @@ exports.getMedicalReports = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+
+exports.getAllDoctors = async (req, res) => {
+  try {
+    const doctors = await Doctor.find({ isAvailable: true })
+      .populate("userId", "name email")
+      .populate("timeSlots")
+      .select("specialization timeSlots");
+    res.status(200).json(doctors);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
 
 exports.deleteAppointment = async (req, res) => {
   try {
@@ -245,5 +262,6 @@ exports.deleteAppointment = async (req, res) => {
   } catch (error) {
     console.error("Error deleting appointment:", error);
     res.status(500).json({ message: "Internal server error" });
+
   }
 };
