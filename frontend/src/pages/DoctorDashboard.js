@@ -573,7 +573,6 @@ const DoctorDashboard = () => {
         }
       );
 
-
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message || "Failed to fetch medical reports");
@@ -586,7 +585,6 @@ const DoctorDashboard = () => {
       console.error("Error fetching medical reports:", error);
     }
   };
-
 
   const handleCancelAppointment = async (appointmentId) => {
     try {
@@ -1002,12 +1000,6 @@ const DoctorDashboard = () => {
                                 </Typography>
                               }
                             />
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleRemoveEducation(index)}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
                           </ListItem>
                         ))}
                       </List>
