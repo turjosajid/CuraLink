@@ -44,6 +44,13 @@ exports.getPatientAppointments = async (req, res) => {
           select: "name",
         },
       })
+
+
+exports.getUpcomingAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find({ doctorId: req.user._id, date: { $gte: new Date() } })
+      .populate('patientId', 'name')
+
       .sort({ date: 1 });
 
     res.status(200).json({ appointments });

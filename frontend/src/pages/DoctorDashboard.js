@@ -234,7 +234,7 @@ const DoctorDashboard = () => {
   const fetchUpcomingAppointments = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/doctors/appointments",
+        `http://localhost:5000/api/doctors/appointments?doctorId=${doctorProfile._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -247,6 +247,11 @@ const DoctorDashboard = () => {
       console.error("Error fetching appointments:", error);
     }
   };
+  useEffect(() => {
+    if (doctorProfile && doctorProfile._id) {
+      fetchUpcomingAppointments();
+    }
+  }, [doctorProfile]);
 
   useEffect(() => {
     if (token) {
@@ -568,6 +573,7 @@ const DoctorDashboard = () => {
         }
       );
 
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message || "Failed to fetch medical reports");
@@ -578,6 +584,32 @@ const DoctorDashboard = () => {
       setShowReportsDialog(true);
     } catch (error) {
       console.error("Error fetching medical reports:", error);
+    }
+  };
+
+
+  const handleCancelAppointment = async (appointmentId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/doctors/appointments/${appointmentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to cancel appointment");
+      }
+
+      setUpcomingAppointments((prev) =>
+        prev.filter((appointment) => appointment._id !== appointmentId)
+      );
+    } catch (error) {
+      console.error("Error cancelling appointment:", error);
     }
   };
 
@@ -1189,6 +1221,15 @@ const DoctorDashboard = () => {
                               ).toLocaleDateString()}`}
                               secondary={`${appointment.startTime} - ${appointment.endTime}`}
                             />
+
+                            <IconButton
+                              edge="end"
+                              onClick={() =>
+                                handleCancelAppointment(appointment._id)
+                              }
+                            >
+                              <DeleteIcon />
+                            </IconButton>
                           </ListItem>
                         ))}
                       </List>

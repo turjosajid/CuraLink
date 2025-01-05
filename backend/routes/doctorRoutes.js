@@ -12,6 +12,8 @@ const {
   toggleAvailability,
   getMedicalReports,
   getAllDoctors,
+  deleteAppointment,
+
 } = require("../controllers/doctorController");
 const { protect, restrictTo } = require("../middleware/auth");
 
@@ -32,5 +34,6 @@ router.get("/appointments", getUpcomingAppointments); // Add this new route
 router.patch("/availability", toggleAvailability); // Add this new route
 router.get("/patients/:patientId/medical-reports", getMedicalReports); // Add this new route
 router.get("/all-doctors", getAllDoctors); // Add this new route
+router.delete("/appointments/:appointmentId", deleteAppointment); // Add this new route
 
 module.exports = router;

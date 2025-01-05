@@ -1,7 +1,9 @@
 const Doctor = require("../models/doctorModel");
 const User = require("../models/userModel");
+
 const Appointment = require("../models/appointmentModel");
 const Patient = require("../models/patientModel");
+
 
 exports.registerDoctor = async (req, res) => {
   try {
@@ -23,6 +25,8 @@ exports.getDoctorProfile = async (req, res) => {
       .populate("patients", "name email");
 
     if (!doctor) {
+
+
       if (req.user.role === "doctor") {
         return res.status(404).json({
           message: "Doctor profile not found. Please complete registration.",
@@ -35,10 +39,12 @@ exports.getDoctorProfile = async (req, res) => {
       });
     }
 
-    console.log("Doctor profile found:", doctor);
+
+    console.log("Doctor profile found:", doctor); // Debug log
     res.status(200).json(doctor);
   } catch (error) {
-    console.error("Error in getDoctorProfile:", error);
+    console.error("Error in getDoctorProfile:", error); // Debug log
+
     res.status(500).json({
       message: "Error fetching doctor profile",
       error: error.message,
@@ -93,6 +99,7 @@ exports.searchPatients = async (req, res) => {
     const { search } = req.query;
     const query = { role: "patient" };
 
+
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: "i" } },
@@ -113,6 +120,7 @@ exports.searchPatients = async (req, res) => {
 exports.addPatient = async (req, res) => {
   try {
     const { patientId } = req.body;
+
 
     const patient = await User.findOne({ _id: patientId, role: "patient" });
     if (!patient) {
@@ -146,6 +154,7 @@ exports.removePatient = async (req, res) => {
   try {
     const { patientId } = req.params;
 
+
     const patient = await User.findOne({ _id: patientId, role: "patient" });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
@@ -166,8 +175,11 @@ exports.removePatient = async (req, res) => {
 
 exports.getUpcomingAppointments = async (req, res) => {
   try {
+
+    const doctorId = req.query.doctorId;
     const appointments = await Appointment.find({
-      doctorId: req.user._id,
+      doctorId,
+
       date: { $gte: new Date() },
     })
       .populate("patientId", "name")
@@ -199,12 +211,15 @@ exports.getMedicalReports = async (req, res) => {
   try {
     const { patientId } = req.params;
 
+
+
     const doctor = await Doctor.findOne({ userId: req.user._id });
     if (!doctor.patients.includes(patientId)) {
       return res
         .status(403)
         .json({ message: "Patient not found in your list" });
     }
+
 
     const patient = await Patient.findOne({ userId: patientId }).select(
       "medicalReports"
@@ -219,6 +234,7 @@ exports.getMedicalReports = async (req, res) => {
   }
 };
 
+
 exports.getAllDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.find({ isAvailable: true })
@@ -228,5 +244,24 @@ exports.getAllDoctors = async (req, res) => {
     res.status(200).json(doctors);
   } catch (error) {
     res.status(400).json({ message: error.message });
+
+exports.deleteAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+
+    // Check if the appointment exists
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // Delete the appointment
+    await Appointment.findByIdAndDelete(appointmentId);
+
+    res.status(200).json({ message: "Appointment deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting appointment:", error);
+    res.status(500).json({ message: "Internal server error" });
+
   }
 };
