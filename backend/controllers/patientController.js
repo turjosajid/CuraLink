@@ -154,3 +154,66 @@ exports.uploadMedicalReport = async (req, res) => {
         res.status(500).send({ message: 'Error uploading report', error: error.message });
     }
 };
+
+// Add medical history
+exports.addMedicalHistory = async (req, res) => {
+  const { id } = req.params;
+  const { description, date } = req.body;
+
+  try {
+    const patient = await Patient.findById(id);
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    const newHistory = {
+      description,
+      date,
+    };
+
+    patient.medicalHistory.push(newHistory);
+    await patient.save();
+
+    res.status(201).json(newHistory);
+  } catch (error) {
+    console.error("Error adding medical history:", error);
+    res.status(500).json({ message: "Failed to add medical history" });
+  }
+};
+
+// Remove medical history
+exports.removeMedicalHistory = async (req, res) => {
+  const { id, historyId } = req.params;
+
+  try {
+    console.log(`Removing medical history with ID: ${historyId} for patient ID: ${id}`); // Log IDs
+
+    const patient = await Patient.findById(id);
+    if (!patient) {
+      console.log("Patient not found");
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    console.log("Patient found:", patient);
+
+    const historyIndex = patient.medicalHistory.findIndex(
+      (history) => history._id.toString() === historyId
+    );
+
+    if (historyIndex === -1) {
+      console.log("Medical history not found");
+      return res.status(404).json({ message: "Medical history not found" });
+    }
+
+    console.log("Medical history found at index:", historyIndex);
+
+    patient.medicalHistory.splice(historyIndex, 1);
+    await patient.save();
+
+    console.log("Medical history removed successfully");
+    res.status(200).json({ message: "Medical history removed successfully" });
+  } catch (error) {
+    console.error("Error removing medical history:", error);
+    res.status(500).json({ message: "Failed to remove medical history", error: error.message });
+  }
+};

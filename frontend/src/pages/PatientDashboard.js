@@ -41,6 +41,8 @@ const PatientDashboard = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [openDialog, setOpenDialog] = useState(false); // Add state for dialog
   const [appointmentDate, setAppointmentDate] = useState(null); // Add state for appointment date
+  const [medicalHistoryDescription, setMedicalHistoryDescription] = useState(""); // Add state for medical history description
+  const [medicalHistoryDate, setMedicalHistoryDate] = useState(null); // Add state for medical history date
   const { user, token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -237,6 +239,78 @@ const PatientDashboard = () => {
     }
   };
 
+  const handleAddMedicalHistory = async () => {
+    if (!medicalHistoryDescription || !medicalHistoryDate) {
+      setError("Please provide a description and select a date.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/patients/${patientProfile._id}/medical-history`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            description: medicalHistoryDescription,
+            date: medicalHistoryDate,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add medical history");
+      }
+
+      setPatientProfile((prevProfile) => ({
+        ...prevProfile,
+        medicalHistory: [...prevProfile.medicalHistory, data],
+      }));
+      setMedicalHistoryDescription("");
+      setMedicalHistoryDate(null);
+    } catch (error) {
+      console.error("Error adding medical history:", error);
+      setError("Failed to add medical history. Please try again.");
+    }
+  };
+
+  const handleRemoveMedicalHistory = async (historyId) => {
+    try {
+      console.log(`Removing medical history with ID: ${historyId}`); // Log history ID
+
+      const response = await fetch(
+        `http://localhost:5000/api/patients/${patientProfile._id}/medical-history/${historyId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to remove medical history");
+      }
+
+      setPatientProfile((prevProfile) => ({
+        ...prevProfile,
+        medicalHistory: prevProfile.medicalHistory.filter(
+          (history) => history._id !== historyId
+        ),
+      }));
+    } catch (error) {
+      console.error("Error removing medical history:", error);
+      setError("Failed to remove medical history. Please try again.");
+    }
+  };
+
   if (isLoading)
     return (
       <Box
@@ -379,9 +453,46 @@ const PatientDashboard = () => {
                             history.date
                           ).toLocaleDateString()}
                         />
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => handleRemoveMedicalHistory(history._id)}
+                        >
+                          Remove
+                        </Button>
                       </ListItem>
                     ))}
                   </List>
+                  {error && (
+                    <Alert severity="error" sx={{ mt: 2 }}>
+                      {error}
+                    </Alert>
+                  )}
+                  <Box sx={{ mt: 2 }}>
+                    <TextField
+                      fullWidth
+                      label="Description"
+                      value={medicalHistoryDescription}
+                      onChange={(e) => setMedicalHistoryDescription(e.target.value)}
+                      sx={{ mb: 2 }}
+                    />
+                    <DatePicker
+                      label="Select Date"
+                      value={medicalHistoryDate}
+                      onChange={(newValue) => setMedicalHistoryDate(newValue)}
+                      renderInput={(params) => (
+                        <TextField {...params} fullWidth sx={{ mb: 2 }} />
+                      )}
+                    />
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      onClick={handleAddMedicalHistory}
+                    >
+                      Add Medical History
+                    </Button>
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>

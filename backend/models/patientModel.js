@@ -29,6 +29,10 @@ const patientSchema = new mongoose.Schema({
   ],
   medicalHistory: [
     {
+      _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        auto: true,
+      },
       date: {
         type: Date,
         required: true,

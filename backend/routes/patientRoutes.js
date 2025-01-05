@@ -13,5 +13,7 @@ router.post('/patients/:id/appointments', patientController.scheduleAppointment)
 router.put('/patients/:id/appointments/:appointmentId/cancel', patientController.cancelAppointment);
 router.post('/', patientController.createPatient);
 router.post('/:id/reports', upload.single('report'), patientController.uploadMedicalReport); // Correct the route
+router.post('/:id/medical-history', patientController.addMedicalHistory); // Add route for adding medical history
+router.delete('/:id/medical-history/:historyId', patientController.removeMedicalHistory); // Add route for removing medical history
 
 module.exports = router;

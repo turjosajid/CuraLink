@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Box, Button, Container, TextField, Typography, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 const Register = () => {
@@ -25,27 +25,16 @@ const Register = () => {
       const data = await response.json();
       
       if (!response.ok) throw new Error(data.message);
-
-      // Create patient document
-      await fetch('http://localhost:5000/api/patients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: data.user._id, phone: formData.phone, address: formData.address }),
-      });
-
+      
       navigate('/login');
     } catch (err) {
-      if (err.message.includes('duplicate key error')) {
-        setError('Email already exists. Please use a different email.');
-      } else {
-        setError(err.message);
-      }
+      setError(err.message);
     }
   };
 
   return (
     <Container maxWidth="sm">
-      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Typography variant="h4" component="h1">Register</Typography>
         {error && <Alert severity="error" sx={{ mt: 2, width: '100%' }}>{error}</Alert>}
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
@@ -84,7 +73,6 @@ const Register = () => {
             >
               <MenuItem value="patient">Patient</MenuItem>
               <MenuItem value="doctor">Doctor</MenuItem>
-              <MenuItem value="pharmacist">Pharmacist</MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -109,9 +97,6 @@ const Register = () => {
           >
             Register
           </Button>
-          <Typography variant="body2" sx={{ mt: 2 }}>
-            Already have an account? <Link to="/login">Log in</Link>
-          </Typography>
         </Box>
       </Box>
     </Container>
