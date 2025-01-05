@@ -221,6 +221,34 @@ exports.getMedicalReports = async (req, res) => {
   }
 };
 
+exports.getMedicalHistory = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    // Verify if the doctor has access to the patient
+    const doctor = await Doctor.findOne({ userId: req.user._id });
+    if (!doctor.patients.includes(patientId)) {
+      return res
+        .status(403)
+        .json({ message: "Patient not found in your list" });
+    }
+
+    // Fetch the patient's medical history
+    const patient = await Patient.findOne({ userId: patientId }).select(
+      "medicalHistory"
+    );
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    // Respond with the medical history
+    res.status(200).json({ medicalHistory: patient.medicalHistory });
+  } catch (error) {
+    // Handle errors and respond with a meaningful message
+    res.status(400).json({ message: error.message });
+  }
+};
+
 exports.getAllDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.find({ isAvailable: true })

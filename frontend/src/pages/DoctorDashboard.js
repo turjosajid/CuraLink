@@ -611,6 +611,41 @@ const DoctorDashboard = () => {
     }
   };
 
+  const [selectedPatientHistory, setSelectedPatientHistory] = useState([]);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+
+  const fetchMedicalHistory = async (patientId) => {
+    try {
+      if (!patientId) {
+        throw new Error("Patient ID is required");
+      }
+
+      const response = await fetch(
+        `http://localhost:5000/api/doctors/patients/${patientId}/medical-history`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Received non-JSON response");
+      }
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to fetch medical history");
+      }
+
+      setSelectedPatientHistory(data.medicalHistory);
+      setShowHistoryDialog(true);
+    } catch (error) {
+      console.error("Error fetching medical history:", error);
+    }
+  };
+
   if (isLoading)
     return (
       <ThemeProvider theme={theme}>
@@ -1098,7 +1133,7 @@ const DoctorDashboard = () => {
                             <Button
                               sx={{ margin: "10px" }}
                               variant="outlined"
-                              onClick={() => {}}
+                              onClick={() => fetchMedicalHistory(patient._id)}
                             >
                               View History
                             </Button>
@@ -1752,6 +1787,47 @@ const DoctorDashboard = () => {
               </DialogContent>
               <DialogActions>
                 <Button onClick={() => setShowReportsDialog(false)}>
+                  Close
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            {/* View History Dialog */}
+            <Dialog
+              open={showHistoryDialog}
+              onClose={() => setShowHistoryDialog(false)}
+              maxWidth="md"
+              fullWidth
+            >
+              <DialogTitle>Medical History</DialogTitle>
+              <DialogContent>
+                <Box sx={{ mt: 2 }}>
+                  <List>
+                    {selectedPatientHistory.map((history, index) => (
+                      <ListItem key={index}>
+                        <ListItemText
+                          primary={history.description}
+                          secondary={`Date: ${new Date(
+                            history.date
+                          ).toLocaleDateString()}`}
+                        />
+                        <List>
+                          {history.drugs.map((prescription, idx) => (
+                            <ListItem key={idx}>
+                              <ListItemText
+                                primary={prescription.name}
+                                secondary={`Dosage: ${prescription.dosage}`}
+                              />
+                            </ListItem>
+                          ))}
+                        </List>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setShowHistoryDialog(false)}>
                   Close
                 </Button>
               </DialogActions>
