@@ -1,72 +1,101 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { 
-  Box, Container, Typography, Paper, Grid, Button, List, ListItem, 
-  ListItemText, TextField, Dialog, DialogTitle, DialogContent, 
-  DialogActions, IconButton, CircularProgress, Stack, Divider, IconButton as MuiIconButton,
-  List as MuiList, ListItem as MuiListItem, 
-  ListItemSecondaryAction, Card, CardContent, CardHeader, Avatar, Chip,
-  useTheme, Tooltip, Badge, MenuItem, Alert, Switch, Collapse, Drawer 
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import LogoutIcon from '@mui/icons-material/Logout';
-import PersonIcon from '@mui/icons-material/Person';
-import SchoolIcon from '@mui/icons-material/School';
-import WorkIcon from '@mui/icons-material/Work';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import GroupIcon from '@mui/icons-material/Group';
-import TimerIcon from '@mui/icons-material/Timer';
-import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import InfoIcon from '@mui/icons-material/Info';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { parseISO, format } from 'date-fns';
-import { validateEmail } from '../utils/validation'; // You'll need to create this utility
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
-import '@fontsource/roboto/300.css'; // Light weight
-import '@fontsource/roboto/400.css'; // Regular weight
-import '@fontsource/roboto/500.css'; // Medium weight
+import React, { useState, useEffect, useContext } from "react";
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Grid,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  CircularProgress,
+  Stack,
+  Divider,
+  IconButton as MuiIconButton,
+  List as MuiList,
+  ListItem as MuiListItem,
+  ListItemSecondaryAction,
+  Card,
+  CardContent,
+  CardHeader,
+  Avatar,
+  Chip,
+  useTheme,
+  Tooltip,
+  Badge,
+  MenuItem,
+  Alert,
+  Switch,
+  Collapse,
+  Drawer,
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
+import SchoolIcon from "@mui/icons-material/School";
+import WorkIcon from "@mui/icons-material/Work";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import GroupIcon from "@mui/icons-material/Group";
+import TimerIcon from "@mui/icons-material/Timer";
+import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from "@mui/icons-material/Search";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import InfoIcon from "@mui/icons-material/Info";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import VerifiedIcon from "@mui/icons-material/Verified";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import { parseISO, format } from "date-fns";
+import { validateEmail } from "../utils/validation"; // You'll need to create this utility
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { CssBaseline } from "@mui/material";
+import "@fontsource/roboto/300.css"; // Light weight
+import "@fontsource/roboto/400.css"; // Regular weight
+import "@fontsource/roboto/500.css"; // Medium weight
 
 const theme = createTheme({
   typography: {
-    fontFamily: 'Helvetica, Arial, sans-serif', // Use a clean sans-serif font
+    fontFamily: "Helvetica, Arial, sans-serif", // Use a clean sans-serif font
     allVariants: {
       fontWeight: 400, // Regular weight for all texts to keep it soft and readable
-      letterSpacing: '0.3px', // Slight letter spacing for clarity
+      letterSpacing: "0.3px", // Slight letter spacing for clarity
       lineHeight: 1.6, // Consistent line height for better readability
     },
     h4: {
-      fontSize: '2rem', // Slightly larger font for headings
+      fontSize: "2rem", // Slightly larger font for headings
       fontWeight: 600, // Slightly bold for prominence but not too heavy
       lineHeight: 1.4, // A bit more space between lines for a relaxed look
-      letterSpacing: '0.5px', // Slightly tighter letter spacing for clarity
+      letterSpacing: "0.5px", // Slightly tighter letter spacing for clarity
     },
     subtitle1: {
-      fontSize: '1.2rem', // Slightly smaller font for subtitles
+      fontSize: "1.2rem", // Slightly smaller font for subtitles
       fontWeight: 400, // Regular weight for a more comfortable feel
       lineHeight: 1.6, // More breathing space between lines for legibility
-      letterSpacing: '0.3px', // Subtle letter spacing
+      letterSpacing: "0.3px", // Subtle letter spacing
     },
     body2: {
-      fontSize: '1rem', // Standard body text size
+      fontSize: "1rem", // Standard body text size
       fontWeight: 300, // Light font weight for a relaxed feel
       lineHeight: 1.7, // Generous line height for readability
-      letterSpacing: '0.2px', // Light letter spacing for clean text
+      letterSpacing: "0.2px", // Light letter spacing for clean text
     },
     button: {
-      textTransform: 'none', // Avoid uppercase letters for a softer appearance
+      textTransform: "none", // Avoid uppercase letters for a softer appearance
       fontWeight: 500, // Slightly bolder text for buttons
-      letterSpacing: '0.8px', // Increase letter spacing for clearer readability
-      padding: '8px 20px', // Provide some padding for better button size
+      letterSpacing: "0.8px", // Increase letter spacing for clearer readability
+      padding: "8px 20px", // Provide some padding for better button size
     },
   },
   spacing: 10,
@@ -93,29 +122,37 @@ const DoctorDashboard = () => {
   const navigate = useNavigate();
 
   // Add new state for education and certificates
-  const [newEducation, setNewEducation] = useState({ degree: '', institute: '', year: '' });
-  const [newCertificate, setNewCertificate] = useState({ name: '', issuer: '', year: '' });
+  const [newEducation, setNewEducation] = useState({
+    degree: "",
+    institute: "",
+    year: "",
+  });
+  const [newCertificate, setNewCertificate] = useState({
+    name: "",
+    issuer: "",
+    year: "",
+  });
 
   // Add new state for time slots
   const [timeSlots, setTimeSlots] = useState([]);
   const [showSlotDialog, setShowSlotDialog] = useState(false);
   const [newSlot, setNewSlot] = useState({
-    day: 'Monday',
+    day: "Monday",
     startTime: null,
-    endTime: null
+    endTime: null,
   });
 
   // Add new state for adding patient
   const [showAddPatientDialog, setShowAddPatientDialog] = useState(false);
   const [availablePatients, setAvailablePatients] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const [addPatientError, setAddPatientError] = useState('');
+  const [addPatientError, setAddPatientError] = useState("");
 
   // Add new states for patient search
-  const [searchEmail, setSearchEmail] = useState('');
+  const [searchEmail, setSearchEmail] = useState("");
   const [searchResult, setSearchResult] = useState(null);
-  const [searchError, setSearchError] = useState('');
+  const [searchError, setSearchError] = useState("");
   const [searchMode, setSearchMode] = useState(true); // true for search, false for manual add
 
   // Add new state for upcoming appointments
@@ -132,30 +169,33 @@ const DoctorDashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:5000/api/doctors/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        "http://localhost:5000/api/doctors/profile",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 404 && data.status === 'PROFILE_NOT_FOUND') {
+        if (response.status === 404 && data.status === "PROFILE_NOT_FOUND") {
           setError({
-            type: 'PROFILE_NOT_FOUND',
-            message: 'Please complete your doctor profile registration.',
-            action: 'register'
+            type: "PROFILE_NOT_FOUND",
+            message: "Please complete your doctor profile registration.",
+            action: "register",
           });
         } else if (response.status === 403) {
           setError({
-            type: 'NOT_AUTHORIZED',
-            message: 'You are not authorized as a doctor.',
-            action: 'redirect'
+            type: "NOT_AUTHORIZED",
+            message: "You are not authorized as a doctor.",
+            action: "redirect",
           });
         } else {
-          throw new Error(data.message || 'Failed to fetch profile');
+          throw new Error(data.message || "Failed to fetch profile");
         }
         return;
       }
@@ -163,11 +203,11 @@ const DoctorDashboard = () => {
       setDoctorProfile(data);
       setIsAvailable(data.isAvailable);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error("Error fetching profile:", error);
       setError({
-        type: 'FETCH_ERROR',
-        message: 'Failed to load doctor profile. Please try again.',
-        action: 'retry'
+        type: "FETCH_ERROR",
+        message: "Failed to load doctor profile. Please try again.",
+        action: "retry",
       });
     } finally {
       setIsLoading(false);
@@ -176,31 +216,42 @@ const DoctorDashboard = () => {
 
   const fetchTimeSlots = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/doctors/time-slots', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
+      const response = await fetch(
+        "http://localhost:5000/api/doctors/time-slots",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
       const data = await response.json();
       setTimeSlots(data.timeSlots || []);
     } catch (error) {
-      console.error('Error fetching time slots:', error);
+      console.error("Error fetching time slots:", error);
     }
   };
 
   const fetchUpcomingAppointments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/doctors/appointments', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
+      const response = await fetch(
+        `http://localhost:5000/api/doctors/appointments?doctorId=${doctorProfile._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
       const data = await response.json();
       setUpcomingAppointments(data.appointments || []);
     } catch (error) {
-      console.error('Error fetching appointments:', error);
+      console.error("Error fetching appointments:", error);
     }
   };
+  useEffect(() => {
+    if (doctorProfile && doctorProfile._id) {
+      fetchUpcomingAppointments();
+    }
+  }, [doctorProfile]);
 
   useEffect(() => {
     if (token) {
@@ -223,73 +274,76 @@ const DoctorDashboard = () => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/doctors/profile', {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(editedProfile)
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/doctors/profile",
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(editedProfile),
+        }
+      );
 
-      if (!response.ok) throw new Error('Update failed');
-      
+      if (!response.ok) throw new Error("Update failed");
+
       const updatedProfile = await response.json();
       setDoctorProfile(updatedProfile);
       setIsEditing(false);
     } catch (error) {
-      setError('Failed to update profile');
+      setError("Failed to update profile");
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setEditedProfile(prev => ({
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+      setEditedProfile((prev) => ({
         ...prev,
         [parent]: {
           ...prev[parent],
-          [child]: value
-        }
+          [child]: value,
+        },
       }));
     } else {
-      setEditedProfile(prev => ({
+      setEditedProfile((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
 
   // Handle education changes
   const handleAddEducation = () => {
-    setEditedProfile(prev => ({
+    setEditedProfile((prev) => ({
       ...prev,
-      education: [...(prev.education || []), newEducation]
+      education: [...(prev.education || []), newEducation],
     }));
-    setNewEducation({ degree: '', institute: '', year: '' });
+    setNewEducation({ degree: "", institute: "", year: "" });
   };
 
   const handleRemoveEducation = (index) => {
-    setEditedProfile(prev => ({
+    setEditedProfile((prev) => ({
       ...prev,
-      education: prev.education.filter((_, i) => i !== index)
+      education: prev.education.filter((_, i) => i !== index),
     }));
   };
 
   // Handle certificate changes
   const handleAddCertificate = () => {
-    setEditedProfile(prev => ({
+    setEditedProfile((prev) => ({
       ...prev,
-      certificates: [...(prev.certificates || []), newCertificate]
+      certificates: [...(prev.certificates || []), newCertificate],
     }));
-    setNewCertificate({ name: '', issuer: '', year: '' });
+    setNewCertificate({ name: "", issuer: "", year: "" });
   };
 
   const handleRemoveCertificate = (index) => {
-    setEditedProfile(prev => ({
+    setEditedProfile((prev) => ({
       ...prev,
-      certificates: prev.certificates.filter((_, i) => i !== index)
+      certificates: prev.certificates.filter((_, i) => i !== index),
     }));
   };
 
@@ -299,72 +353,75 @@ const DoctorDashboard = () => {
 
     const formattedSlot = {
       day: newSlot.day,
-      startTime: format(new Date(newSlot.startTime), 'HH:mm'),
-      endTime: format(new Date(newSlot.endTime), 'HH:mm'),
-      isAvailable: true
+      startTime: format(new Date(newSlot.startTime), "HH:mm"),
+      endTime: format(new Date(newSlot.endTime), "HH:mm"),
+      isAvailable: true,
     };
 
     const updatedSlots = [...timeSlots, formattedSlot];
 
     try {
-      await fetch('http://localhost:5000/api/doctors/time-slots', {
-        method: 'PUT',
+      await fetch("http://localhost:5000/api/doctors/time-slots", {
+        method: "PUT",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ timeSlots: updatedSlots })
+        body: JSON.stringify({ timeSlots: updatedSlots }),
       });
 
       setTimeSlots(updatedSlots);
       setShowSlotDialog(false);
-      setNewSlot({ day: 'Monday', startTime: null, endTime: null });
+      setNewSlot({ day: "Monday", startTime: null, endTime: null });
     } catch (error) {
-      console.error('Error updating time slots:', error);
+      console.error("Error updating time slots:", error);
     }
   };
 
   const handleDeleteSlot = async (index) => {
     const updatedSlots = timeSlots.filter((_, i) => i !== index);
-    
+
     try {
-      await fetch('http://localhost:5000/api/doctors/time-slots', {
-        method: 'PUT',
+      await fetch("http://localhost:5000/api/doctors/time-slots", {
+        method: "PUT",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ timeSlots: updatedSlots })
+        body: JSON.stringify({ timeSlots: updatedSlots }),
       });
 
       setTimeSlots(updatedSlots);
     } catch (error) {
-      console.error('Error deleting time slot:', error);
+      console.error("Error deleting time slot:", error);
     }
   };
 
   // Add new function to handle patient search
   const handleSearchPatient = async () => {
     if (!validateEmail(searchEmail)) {
-      setSearchError('Please enter a valid email address');
+      setSearchError("Please enter a valid email address");
       return;
     }
-  
+
     try {
-      const response = await fetch(`http://localhost:5000/api/doctors/search-patients?email=${searchEmail}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
+      const response = await fetch(
+        `http://localhost:5000/api/doctors/search-patients?email=${searchEmail}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-  
+      );
+
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to search patient');
+        throw new Error(data.message || "Failed to search patient");
       }
-  
+
       setSearchResult(data);
-      setSearchError('');
+      setSearchError("");
     } catch (error) {
       setSearchError(error.message);
       setSearchResult(null);
@@ -372,22 +429,25 @@ const DoctorDashboard = () => {
   };
 
   // Add new function to fetch patients
-  const fetchAvailablePatients = async (search = '') => {
+  const fetchAvailablePatients = async (search = "") => {
     try {
-      const response = await fetch(`http://localhost:5000/api/doctors/search-patients?search=${search}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
+      const response = await fetch(
+        `http://localhost:5000/api/doctors/search-patients?search=${search}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-      
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch patients');
+        throw new Error("Failed to fetch patients");
       }
-  
+
       const data = await response.json();
       setAvailablePatients(data);
     } catch (error) {
-      console.error('Error fetching patients:', error);
+      console.error("Error fetching patients:", error);
     }
   };
 
@@ -395,31 +455,34 @@ const DoctorDashboard = () => {
   const handleAddPatient = async () => {
     try {
       if (!selectedPatient) {
-        setAddPatientError('Please select a patient first');
+        setAddPatientError("Please select a patient first");
         return;
       }
-  
-      const response = await fetch('http://localhost:5000/api/doctors/patients', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ patientId: selectedPatient._id })
-      });
-  
+
+      const response = await fetch(
+        "http://localhost:5000/api/doctors/patients",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ patientId: selectedPatient._id }),
+        }
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to add patient');
+        throw new Error("Failed to add patient");
       }
-  
+
       const data = await response.json();
-      setDoctorProfile(prev => ({
+      setDoctorProfile((prev) => ({
         ...prev,
-        patients: [...prev.patients, data.patient]
+        patients: [...prev.patients, data.patient],
       }));
       setShowAddPatientDialog(false);
       setSelectedPatient(null);
-      setSearchTerm('');
+      setSearchTerm("");
       fetchDoctorProfile(); // Reload the patients card
     } catch (error) {
       setAddPatientError(error.message);
@@ -430,27 +493,30 @@ const DoctorDashboard = () => {
   const handleRemovePatient = async (patientId) => {
     try {
       if (!patientId) {
-        throw new Error('Patient ID is required');
+        throw new Error("Patient ID is required");
       }
 
-      const response = await fetch(`http://localhost:5000/api/doctors/patients/${patientId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `http://localhost:5000/api/doctors/patients/${patientId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
-  
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to remove patient');
+        throw new Error("Failed to remove patient");
       }
-  
-      setDoctorProfile(prev => ({
+
+      setDoctorProfile((prev) => ({
         ...prev,
-        patients: prev.patients.filter(p => p._id !== patientId)
+        patients: prev.patients.filter((p) => p._id !== patientId),
       }));
     } catch (error) {
-      console.error('Error removing patient:', error);
+      console.error("Error removing patient:", error);
     }
   };
 
@@ -464,25 +530,28 @@ const DoctorDashboard = () => {
   // Add logout handler
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleToggleAvailability = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/doctors/availability', {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ isAvailable: !isAvailable })
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/doctors/availability",
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ isAvailable: !isAvailable }),
+        }
+      );
 
-      if (!response.ok) throw new Error('Failed to update availability');
+      if (!response.ok) throw new Error("Failed to update availability");
 
       setIsAvailable(!isAvailable);
     } catch (error) {
-      console.error('Error updating availability:', error);
+      console.error("Error updating availability:", error);
     }
   };
 
@@ -492,103 +561,136 @@ const DoctorDashboard = () => {
   const fetchMedicalReports = async (patientId) => {
     try {
       if (!patientId) {
-        throw new Error('Patient ID is required');
+        throw new Error("Patient ID is required");
       }
 
-      const response = await fetch(`http://localhost:5000/api/doctors/patients/${patientId}/medical-reports`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
+      const response = await fetch(
+        `http://localhost:5000/api/doctors/patients/${patientId}/medical-reports`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch medical reports');
+        throw new Error(data.message || "Failed to fetch medical reports");
       }
 
       setSelectedPatientReports(data.medicalReports);
-      console.log('Fetched medical reports:', data.medicalReports); // Log the fetched reports
+      console.log("Fetched medical reports:", data.medicalReports); // Log the fetched reports
       setShowReportsDialog(true);
     } catch (error) {
-      console.error('Error fetching medical reports:', error);
+      console.error("Error fetching medical reports:", error);
     }
   };
 
-  if (isLoading) return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
-        <CircularProgress />
-        <Typography sx={{ ml: 2 }}>Loading profile...</Typography>
-      </Box>
-    </ThemeProvider>
-  );
+  if (isLoading)
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="80vh"
+        >
+          <CircularProgress />
+          <Typography sx={{ ml: 2 }}>Loading profile...</Typography>
+        </Box>
+      </ThemeProvider>
+    );
 
-  if (error) return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Box display="flex" flexDirection="column" alignItems="center" minHeight="80vh" padding={4}>
-        <Typography color="error" gutterBottom>{error.message}</Typography>
-        {error.action === 'retry' && (
-          <Button variant="contained" onClick={handleRetry} sx={{ mt: 2 }}>
-            Retry Loading
-          </Button>
-        )}
-        {error.action === 'register' && (
-          <Button 
-            variant="contained" 
-            color="primary" 
-            onClick={() => navigate('/doctor/register')} 
-            sx={{ mt: 2 }}
-          >
-            Complete Registration
-          </Button>
-        )}
-        {error.action === 'redirect' && (
-          <Button variant="contained" color="primary" href="/" sx={{ mt: 2 }}>
-            Go to Home
-          </Button>
-        )}
-      </Box>
-    </ThemeProvider>
-  );
+  if (error)
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          minHeight="80vh"
+          padding={4}
+        >
+          <Typography color="error" gutterBottom>
+            {error.message}
+          </Typography>
+          {error.action === "retry" && (
+            <Button variant="contained" onClick={handleRetry} sx={{ mt: 2 }}>
+              Retry Loading
+            </Button>
+          )}
+          {error.action === "register" && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("/doctor/register")}
+              sx={{ mt: 2 }}
+            >
+              Complete Registration
+            </Button>
+          )}
+          {error.action === "redirect" && (
+            <Button variant="contained" color="primary" href="/" sx={{ mt: 2 }}>
+              Go to Home
+            </Button>
+          )}
+        </Box>
+      </ThemeProvider>
+    );
 
-  if (!doctorProfile) return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
-        <Typography>No profile data available</Typography>
-      </Box>
-    </ThemeProvider>
-  );
+  if (!doctorProfile)
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="80vh"
+        >
+          <Typography>No profile data available</Typography>
+        </Box>
+      </ThemeProvider>
+    );
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: "flex" }}>
         <Drawer
           sx={{
             width: drawerWidth,
             flexShrink: 0,
-            '& .MuiDrawer-paper': {
+            "& .MuiDrawer-paper": {
               width: drawerWidth,
-              boxSizing: 'border-box',
+              boxSizing: "border-box",
             },
           }}
           variant="permanent"
           anchor="left"
         >
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              p: 2,
+            }}
+          >
             <Avatar
-              sx={{ 
-                width: 64, 
+              sx={{
+                width: 64,
                 height: 64,
-                bgcolor: (theme) => theme.palette.primary.main 
+                bgcolor: (theme) => theme.palette.primary.main,
               }}
             >
               {user.name[0]}
             </Avatar>
-            <Typography variant="h4" sx={{ mt: 2 }}>{user.name}</Typography>
+            <Typography variant="h4" sx={{ mt: 2 }}>
+              {user.name}
+            </Typography>
             <Typography variant="subtitle1" color="text.secondary">
               {doctorProfile.specialization}
             </Typography>
@@ -598,60 +700,60 @@ const DoctorDashboard = () => {
               color="primary"
               sx={{ mt: 2 }}
             />
-            <Typography>{isAvailable ? 'Available' : 'Not Available'}</Typography>
+            <Typography>
+              {isAvailable ? "Available" : "Not Available"}
+            </Typography>
             <Button
-  variant="contained"
-  startIcon={<EditIcon />}
-  onClick={handleEdit}
-  sx={{
-    mt: 2,
-    borderRadius: '50px', // Rounded corners
-    textTransform: 'none', // Prevent text capitalization
-    fontWeight: 'bold', // Bold text for a stronger presence
-    paddingX: 4, // Increase horizontal padding for a larger button
-    paddingY: 1.5, // Add vertical padding for a taller button
-    backgroundColor: 'primary.main', // Primary color for background
-    width: '100%', // Make the button span full width
-    maxWidth: '300px', // Optional: limit the button width if needed
-    '&:hover': {
-      backgroundColor: 'primary.dark', // Darker shade on hover
-      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)', // Subtle shadow on hover
-    },
-    transition: 'all 0.3s ease', // Smooth transition for hover effect
-  }}
->
-  Edit Profile
-</Button>
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={handleEdit}
+              sx={{
+                mt: 2,
+                borderRadius: "50px", // Rounded corners
+                textTransform: "none", // Prevent text capitalization
+                fontWeight: "bold", // Bold text for a stronger presence
+                paddingX: 4, // Increase horizontal padding for a larger button
+                paddingY: 1.5, // Add vertical padding for a taller button
+                backgroundColor: "primary.main", // Primary color for background
+                width: "100%", // Make the button span full width
+                maxWidth: "300px", // Optional: limit the button width if needed
+                "&:hover": {
+                  backgroundColor: "primary.dark", // Darker shade on hover
+                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)", // Subtle shadow on hover
+                },
+                transition: "all 0.3s ease", // Smooth transition for hover effect
+              }}
+            >
+              Edit Profile
+            </Button>
 
-<Button
-  variant="outlined"
-  color="error"
-  startIcon={<LogoutIcon />}
-  onClick={handleLogout}
-  sx={{
-    mt: 2,
-    borderRadius: '50px', // Rounded corners
-    textTransform: 'none', // Prevent text capitalization
-    fontWeight: 'bold', // Bold text
-    paddingX: 4, // Increase horizontal padding for a larger button
-    paddingY: 1.5, // Add vertical padding for a taller button
-    borderColor: 'primary.main', // Use error color for border
-    color: 'primary.main', // Use error color for text
-    width: '100%', // Make the button span full width
-    maxWidth: '300px', // Optional: limit the button width if needed
-    '&:hover': {
-      borderColor: 'error.dark', // Darker border on hover
-      backgroundColor: 'error.light', // Light background color on hover
-      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)', // Subtle shadow on hover
-      color: 'white',
-    },
-    transition: 'all 0.3s ease', // Smooth transition for hover effect
-  }}
->
-  Logout
-</Button>
-
-
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<LogoutIcon />}
+              onClick={handleLogout}
+              sx={{
+                mt: 2,
+                borderRadius: "50px", // Rounded corners
+                textTransform: "none", // Prevent text capitalization
+                fontWeight: "bold", // Bold text
+                paddingX: 4, // Increase horizontal padding for a larger button
+                paddingY: 1.5, // Add vertical padding for a taller button
+                borderColor: "primary.main", // Use error color for border
+                color: "primary.main", // Use error color for text
+                width: "100%", // Make the button span full width
+                maxWidth: "300px", // Optional: limit the button width if needed
+                "&:hover": {
+                  borderColor: "error.dark", // Darker border on hover
+                  backgroundColor: "error.light", // Light background color on hover
+                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)", // Subtle shadow on hover
+                  color: "white",
+                },
+                transition: "all 0.3s ease", // Smooth transition for hover effect
+              }}
+            >
+              Logout
+            </Button>
           </Box>
         </Drawer>
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
@@ -659,17 +761,23 @@ const DoctorDashboard = () => {
             <Grid container spacing={3}>
               {/* Profile Information */}
               <Grid item xs={12} md={6}>
-                <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
-                  <CardHeader 
+                <Card
+                  sx={{
+                    boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
+                  }}
+                >
+                  <CardHeader
                     title={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
                         <InfoIcon sx={{ mr: 1 }} />
-                        <Typography variant="h6">Profile Information</Typography>
+                        <Typography variant="h6">
+                          Profile Information
+                        </Typography>
                       </Box>
                     }
                     action={
                       <IconButton
-                        onClick={() => handleExpandClick('profile')}
+                        onClick={() => handleExpandClick("profile")}
                         aria-expanded={expanded.profile}
                         aria-label="show more"
                       >
@@ -681,40 +789,77 @@ const DoctorDashboard = () => {
                     <CardContent>
                       <Grid container spacing={2}>
                         <Grid item xs={12} md={6}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                            <WorkIcon sx={{ mr: 1, color: 'primary.main' }} />
-                            <Typography>Experience: {doctorProfile.experience} years</Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 2,
+                            }}
+                          >
+                            <WorkIcon sx={{ mr: 1, color: "primary.main" }} />
+                            <Typography>
+                              Experience: {doctorProfile.experience} years
+                            </Typography>
                           </Box>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                            <SchoolIcon sx={{ mr: 1, color: 'primary.main' }} />
-                            <Typography>License: {doctorProfile.license}</Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 2,
+                            }}
+                          >
+                            <SchoolIcon sx={{ mr: 1, color: "primary.main" }} />
+                            <Typography>
+                              License: {doctorProfile.license}
+                            </Typography>
                           </Box>
-                          <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2 }}>
+                          <Typography
+                            variant="subtitle2"
+                            color="text.secondary"
+                            sx={{ mt: 2 }}
+                          >
                             About
                           </Typography>
-                          <Typography paragraph>{doctorProfile.about}</Typography>
+                          <Typography paragraph>
+                            {doctorProfile.about}
+                          </Typography>
                         </Grid>
                         <Grid item xs={12} md={6}>
-                          <Typography variant="subtitle2" color="text.secondary">
+                          <Typography
+                            variant="subtitle2"
+                            color="text.secondary"
+                          >
                             Languages
                           </Typography>
                           <Box sx={{ mt: 1, mb: 2 }}>
                             {doctorProfile.languages?.map((lang, index) => (
-                              <Chip 
-                                key={index} 
-                                label={lang} 
-                                sx={{ mr: 1, mb: 1 }} 
+                              <Chip
+                                key={index}
+                                label={lang}
+                                sx={{ mr: 1, mb: 1 }}
                                 size="small"
                               />
                             ))}
                           </Box>
-                          <Typography variant="subtitle2" color="text.secondary">
+                          <Typography
+                            variant="subtitle2"
+                            color="text.secondary"
+                          >
                             Address
                           </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'flex-start', mt: 1 }}>
-                            <LocationOnIcon sx={{ mr: 1, color: 'primary.main' }} />
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "flex-start",
+                              mt: 1,
+                            }}
+                          >
+                            <LocationOnIcon
+                              sx={{ mr: 1, color: "primary.main" }}
+                            />
                             <Typography>
-                              {`${doctorProfile.address?.street}, ${doctorProfile.address?.city}`}<br />
+                              {`${doctorProfile.address?.street}, ${doctorProfile.address?.city}`}
+                              <br />
                               {`${doctorProfile.address?.state}, ${doctorProfile.address?.country}`}
                             </Typography>
                           </Box>
@@ -727,17 +872,21 @@ const DoctorDashboard = () => {
 
               {/* Quick Stats */}
               <Grid item xs={12} md={6}>
-                <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
-                  <CardHeader 
+                <Card
+                  sx={{
+                    boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
+                  }}
+                >
+                  <CardHeader
                     title={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
                         <BarChartIcon sx={{ mr: 1 }} />
                         <Typography variant="h6">Quick Stats</Typography>
                       </Box>
                     }
                     action={
                       <IconButton
-                        onClick={() => handleExpandClick('stats')}
+                        onClick={() => handleExpandClick("stats")}
                         aria-expanded={expanded.stats}
                         aria-label="show more"
                       >
@@ -747,16 +896,18 @@ const DoctorDashboard = () => {
                   />
                   <Collapse in={expanded.stats} timeout="auto" unmountOnExit>
                     <CardContent>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
-                        <Box sx={{ textAlign: 'center' }}>
+                      <Box
+                        sx={{ display: "flex", justifyContent: "space-around" }}
+                      >
+                        <Box sx={{ textAlign: "center" }}>
                           <Typography variant="h4" color="primary">
-                          ৳ {doctorProfile.fees}
+                            ৳ {doctorProfile.fees}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Consultation Fee
                           </Typography>
                         </Box>
-                        <Box sx={{ textAlign: 'center' }}>
+                        <Box sx={{ textAlign: "center" }}>
                           <Typography variant="h4" color="primary">
                             {doctorProfile.patients?.length || 0}
                           </Typography>
@@ -772,17 +923,23 @@ const DoctorDashboard = () => {
 
               {/* Education & Certificates */}
               <Grid item xs={12} md={6}>
-                <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
-                  <CardHeader 
+                <Card
+                  sx={{
+                    boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
+                  }}
+                >
+                  <CardHeader
                     title={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
                         <SchoolIcon sx={{ mr: 1 }} />
-                        <Typography variant="h6">Education & Certificates</Typography>
+                        <Typography variant="h6">
+                          Education & Certificates
+                        </Typography>
                       </Box>
                     }
                     action={
                       <IconButton
-                        onClick={() => handleExpandClick('education')}
+                        onClick={() => handleExpandClick("education")}
                         aria-expanded={expanded.education}
                         aria-label="show more"
                       >
@@ -790,10 +947,14 @@ const DoctorDashboard = () => {
                       </IconButton>
                     }
                   />
-                  <Collapse in={expanded.education} timeout="auto" unmountOnExit>
+                  <Collapse
+                    in={expanded.education}
+                    timeout="auto"
+                    unmountOnExit
+                  >
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
-                        <SchoolIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        <SchoolIcon sx={{ mr: 1, verticalAlign: "middle" }} />
                         Education
                       </Typography>
                       <List>
@@ -806,12 +967,18 @@ const DoctorDashboard = () => {
                                 </Typography>
                               }
                               secondary={
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
                                   {`${edu.institute} - ${edu.year}`}
                                 </Typography>
                               }
                             />
-                            <IconButton edge="end" onClick={() => handleRemoveEducation(index)}>
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleRemoveEducation(index)}
+                            >
                               <DeleteIcon />
                             </IconButton>
                           </ListItem>
@@ -821,7 +988,7 @@ const DoctorDashboard = () => {
                       <Divider sx={{ my: 2 }} />
 
                       <Typography variant="h6" gutterBottom>
-                        <VerifiedIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        <VerifiedIcon sx={{ mr: 1, verticalAlign: "middle" }} />
                         Certificates
                       </Typography>
                       <List>
@@ -834,12 +1001,18 @@ const DoctorDashboard = () => {
                                 </Typography>
                               }
                               secondary={
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
                                   {`${cert.issuer} - ${cert.year}`}
                                 </Typography>
                               }
                             />
-                            <IconButton edge="end" onClick={() => handleRemoveCertificate(index)}>
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleRemoveCertificate(index)}
+                            >
                               <DeleteIcon />
                             </IconButton>
                           </ListItem>
@@ -852,17 +1025,21 @@ const DoctorDashboard = () => {
 
               {/* Patients List */}
               <Grid item xs={12} md={6}>
-                <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
-                  <CardHeader 
+                <Card
+                  sx={{
+                    boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
+                  }}
+                >
+                  <CardHeader
                     title={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
                         <GroupIcon sx={{ mr: 1 }} />
                         <Typography variant="h6">Patients</Typography>
                       </Box>
                     }
                     action={
                       <IconButton
-                        onClick={() => handleExpandClick('patients')}
+                        onClick={() => handleExpandClick("patients")}
                         aria-expanded={expanded.patients}
                         aria-label="show more"
                       >
@@ -874,16 +1051,16 @@ const DoctorDashboard = () => {
                     <CardContent>
                       <List>
                         {doctorProfile.patients.map((patient) => (
-                          <ListItem 
+                          <ListItem
                             key={patient._id}
                             sx={{
-                              '&:hover': {
-                                backgroundColor: 'action.hover',
-                                borderRadius: 1
-                              }
+                              "&:hover": {
+                                backgroundColor: "action.hover",
+                                borderRadius: 1,
+                              },
                             }}
                           >
-                            <ListItemText 
+                            <ListItemText
                               primary={patient.name}
                               secondary={patient.email}
                             />
@@ -893,7 +1070,10 @@ const DoctorDashboard = () => {
                             >
                               View Reports
                             </Button>
-                            <IconButton edge="end" onClick={() => handleRemovePatient(patient._id)}>
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleRemovePatient(patient._id)}
+                            >
                               <DeleteIcon />
                             </IconButton>
                           </ListItem>
@@ -914,17 +1094,21 @@ const DoctorDashboard = () => {
 
               {/* Appointment Slots */}
               <Grid item xs={12} md={6}>
-                <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
-                  <CardHeader 
+                <Card
+                  sx={{
+                    boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
+                  }}
+                >
+                  <CardHeader
                     title={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
                         <TimerIcon sx={{ mr: 1 }} />
                         <Typography variant="h6">Appointment Slots</Typography>
                       </Box>
                     }
                     action={
                       <IconButton
-                        onClick={() => handleExpandClick('slots')}
+                        onClick={() => handleExpandClick("slots")}
                         aria-expanded={expanded.slots}
                         aria-label="show more"
                       >
@@ -939,7 +1123,10 @@ const DoctorDashboard = () => {
                           <ListItem
                             key={index}
                             secondaryAction={
-                              <IconButton edge="end" onClick={() => handleDeleteSlot(index)}>
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleDeleteSlot(index)}
+                              >
                                 <DeleteIcon />
                               </IconButton>
                             }
@@ -966,17 +1153,23 @@ const DoctorDashboard = () => {
 
               {/* Upcoming Appointments */}
               <Grid item xs={12} md={6}>
-                <Card sx={{ boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px' }}>
-                  <CardHeader 
+                <Card
+                  sx={{
+                    boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
+                  }}
+                >
+                  <CardHeader
                     title={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
                         <CalendarTodayIcon sx={{ mr: 1 }} />
-                        <Typography variant="h6">Upcoming Appointments</Typography>
+                        <Typography variant="h6">
+                          Upcoming Appointments
+                        </Typography>
                       </Box>
                     }
                     action={
                       <IconButton
-                        onClick={() => handleExpandClick('appointments')}
+                        onClick={() => handleExpandClick("appointments")}
                         aria-expanded={expanded.appointments}
                         aria-label="show more"
                       >
@@ -984,13 +1177,21 @@ const DoctorDashboard = () => {
                       </IconButton>
                     }
                   />
-                  <Collapse in={expanded.appointments} timeout="auto" unmountOnExit>
+                  <Collapse
+                    in={expanded.appointments}
+                    timeout="auto"
+                    unmountOnExit
+                  >
                     <CardContent>
                       <List>
                         {upcomingAppointments.map((appointment, index) => (
                           <ListItem key={index}>
                             <ListItemText
-                              primary={`${appointment.patientId.name} - ${new Date(appointment.date).toLocaleDateString()}`}
+                              primary={`${
+                                appointment.patientId.name
+                              } - ${new Date(
+                                appointment.date
+                              ).toLocaleDateString()}`}
                               secondary={`${appointment.startTime} - ${appointment.endTime}`}
                             />
                           </ListItem>
@@ -1003,7 +1204,12 @@ const DoctorDashboard = () => {
             </Grid>
 
             {/* Edit Dialog remains unchanged */}
-            <Dialog open={isEditing} onClose={() => setIsEditing(false)} maxWidth="md" fullWidth>
+            <Dialog
+              open={isEditing}
+              onClose={() => setIsEditing(false)}
+              maxWidth="md"
+              fullWidth
+            >
               <DialogTitle>Edit Profile</DialogTitle>
               <DialogContent>
                 <Box sx={{ mt: 2 }}>
@@ -1014,7 +1220,7 @@ const DoctorDashboard = () => {
                         required
                         label="Specialization"
                         name="specialization"
-                        value={editedProfile?.specialization || ''}
+                        value={editedProfile?.specialization || ""}
                         onChange={handleChange}
                         sx={{ mb: 2 }}
                       />
@@ -1025,7 +1231,7 @@ const DoctorDashboard = () => {
                         required
                         label="License Number"
                         name="license"
-                        value={editedProfile?.license || ''}
+                        value={editedProfile?.license || ""}
                         onChange={handleChange}
                         sx={{ mb: 2 }}
                       />
@@ -1037,7 +1243,7 @@ const DoctorDashboard = () => {
                         type="number"
                         label="Years of Experience"
                         name="experience"
-                        value={editedProfile?.experience || ''}
+                        value={editedProfile?.experience || ""}
                         onChange={handleChange}
                         sx={{ mb: 2 }}
                       />
@@ -1049,7 +1255,7 @@ const DoctorDashboard = () => {
                         type="number"
                         label="Consultation Fee"
                         name="fees"
-                        value={editedProfile?.fees || ''}
+                        value={editedProfile?.fees || ""}
                         onChange={handleChange}
                         sx={{ mb: 2 }}
                       />
@@ -1061,7 +1267,7 @@ const DoctorDashboard = () => {
                         rows={4}
                         label="About"
                         name="about"
-                        value={editedProfile?.about || ''}
+                        value={editedProfile?.about || ""}
                         onChange={handleChange}
                         sx={{ mb: 2 }}
                       />
@@ -1071,25 +1277,31 @@ const DoctorDashboard = () => {
                         fullWidth
                         label="Languages (comma-separated)"
                         name="languages"
-                        value={editedProfile?.languages?.join(', ') || ''}
-                        onChange={(e) => setEditedProfile({
-                          ...editedProfile,
-                          languages: e.target.value.split(',').map(lang => lang.trim())
-                        })}
+                        value={editedProfile?.languages?.join(", ") || ""}
+                        onChange={(e) =>
+                          setEditedProfile({
+                            ...editedProfile,
+                            languages: e.target.value
+                              .split(",")
+                              .map((lang) => lang.trim()),
+                          })
+                        }
                         sx={{ mb: 2 }}
                       />
                     </Grid>
 
                     {/* Address Fields */}
                     <Grid item xs={12}>
-                      <Typography variant="h6" gutterBottom>Address</Typography>
+                      <Typography variant="h6" gutterBottom>
+                        Address
+                      </Typography>
                     </Grid>
                     <Grid item xs={12}>
                       <TextField
                         fullWidth
                         label="Street"
                         name="address.street"
-                        value={editedProfile?.address?.street || ''}
+                        value={editedProfile?.address?.street || ""}
                         onChange={handleChange}
                         sx={{ mb: 2 }}
                       />
@@ -1099,7 +1311,7 @@ const DoctorDashboard = () => {
                         fullWidth
                         label="City"
                         name="address.city"
-                        value={editedProfile?.address?.city || ''}
+                        value={editedProfile?.address?.city || ""}
                         onChange={handleChange}
                         sx={{ mb: 2 }}
                       />
@@ -1109,7 +1321,7 @@ const DoctorDashboard = () => {
                         fullWidth
                         label="State"
                         name="address.state"
-                        value={editedProfile?.address?.state || ''}
+                        value={editedProfile?.address?.state || ""}
                         onChange={handleChange}
                         sx={{ mb: 2 }}
                       />
@@ -1119,7 +1331,7 @@ const DoctorDashboard = () => {
                         fullWidth
                         label="Country"
                         name="address.country"
-                        value={editedProfile?.address?.country || ''}
+                        value={editedProfile?.address?.country || ""}
                         onChange={handleChange}
                         sx={{ mb: 2 }}
                       />
@@ -1129,7 +1341,7 @@ const DoctorDashboard = () => {
                         fullWidth
                         label="Zip Code"
                         name="address.zipCode"
-                        value={editedProfile?.address?.zipCode || ''}
+                        value={editedProfile?.address?.zipCode || ""}
                         onChange={handleChange}
                         sx={{ mb: 2 }}
                       />
@@ -1138,12 +1350,24 @@ const DoctorDashboard = () => {
                     {/* Education Section */}
                     <Grid item xs={12}>
                       <Divider sx={{ my: 2 }} />
-                      <Typography variant="h6" gutterBottom>Education</Typography>
+                      <Typography variant="h6" gutterBottom>
+                        Education
+                      </Typography>
                       <Stack spacing={2}>
                         {editedProfile?.education?.map((edu, index) => (
-                          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Box
+                            key={index}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
                             <Typography>{`${edu.degree} - ${edu.institute} (${edu.year})`}</Typography>
-                            <IconButton size="small" onClick={() => handleRemoveEducation(index)}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleRemoveEducation(index)}
+                            >
                               <DeleteIcon />
                             </IconButton>
                           </Box>
@@ -1154,7 +1378,12 @@ const DoctorDashboard = () => {
                               fullWidth
                               label="Degree"
                               value={newEducation.degree}
-                              onChange={(e) => setNewEducation(prev => ({ ...prev, degree: e.target.value }))}
+                              onChange={(e) =>
+                                setNewEducation((prev) => ({
+                                  ...prev,
+                                  degree: e.target.value,
+                                }))
+                              }
                             />
                           </Grid>
                           <Grid item xs={4}>
@@ -1162,7 +1391,12 @@ const DoctorDashboard = () => {
                               fullWidth
                               label="Institute"
                               value={newEducation.institute}
-                              onChange={(e) => setNewEducation(prev => ({ ...prev, institute: e.target.value }))}
+                              onChange={(e) =>
+                                setNewEducation((prev) => ({
+                                  ...prev,
+                                  institute: e.target.value,
+                                }))
+                              }
                             />
                           </Grid>
                           <Grid item xs={2}>
@@ -1170,14 +1404,23 @@ const DoctorDashboard = () => {
                               fullWidth
                               label="Year"
                               value={newEducation.year}
-                              onChange={(e) => setNewEducation(prev => ({ ...prev, year: e.target.value }))}
+                              onChange={(e) =>
+                                setNewEducation((prev) => ({
+                                  ...prev,
+                                  year: e.target.value,
+                                }))
+                              }
                             />
                           </Grid>
                           <Grid item xs={2}>
-                            <Button 
-                              variant="contained" 
+                            <Button
+                              variant="contained"
                               onClick={handleAddEducation}
-                              disabled={!newEducation.degree || !newEducation.institute || !newEducation.year}
+                              disabled={
+                                !newEducation.degree ||
+                                !newEducation.institute ||
+                                !newEducation.year
+                              }
                             >
                               Add
                             </Button>
@@ -1189,12 +1432,24 @@ const DoctorDashboard = () => {
                     {/* Certificates Section */}
                     <Grid item xs={12}>
                       <Divider sx={{ my: 2 }} />
-                      <Typography variant="h6" gutterBottom>Certificates</Typography>
+                      <Typography variant="h6" gutterBottom>
+                        Certificates
+                      </Typography>
                       <Stack spacing={2}>
                         {editedProfile?.certificates?.map((cert, index) => (
-                          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Box
+                            key={index}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
                             <Typography>{`${cert.name} - ${cert.issuer} (${cert.year})`}</Typography>
-                            <IconButton size="small" onClick={() => handleRemoveCertificate(index)}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleRemoveCertificate(index)}
+                            >
                               <DeleteIcon />
                             </IconButton>
                           </Box>
@@ -1205,7 +1460,12 @@ const DoctorDashboard = () => {
                               fullWidth
                               label="Certificate Name"
                               value={newCertificate.name}
-                              onChange={(e) => setNewCertificate(prev => ({ ...prev, name: e.target.value }))}
+                              onChange={(e) =>
+                                setNewCertificate((prev) => ({
+                                  ...prev,
+                                  name: e.target.value,
+                                }))
+                              }
                             />
                           </Grid>
                           <Grid item xs={4}>
@@ -1213,7 +1473,12 @@ const DoctorDashboard = () => {
                               fullWidth
                               label="Issuer"
                               value={newCertificate.issuer}
-                              onChange={(e) => setNewCertificate(prev => ({ ...prev, issuer: e.target.value }))}
+                              onChange={(e) =>
+                                setNewCertificate((prev) => ({
+                                  ...prev,
+                                  issuer: e.target.value,
+                                }))
+                              }
                             />
                           </Grid>
                           <Grid item xs={2}>
@@ -1221,14 +1486,23 @@ const DoctorDashboard = () => {
                               fullWidth
                               label="Year"
                               value={newCertificate.year}
-                              onChange={(e) => setNewCertificate(prev => ({ ...prev, year: e.target.value }))}
+                              onChange={(e) =>
+                                setNewCertificate((prev) => ({
+                                  ...prev,
+                                  year: e.target.value,
+                                }))
+                              }
                             />
                           </Grid>
                           <Grid item xs={2}>
-                            <Button 
-                              variant="contained" 
+                            <Button
+                              variant="contained"
                               onClick={handleAddCertificate}
-                              disabled={!newCertificate.name || !newCertificate.issuer || !newCertificate.year}
+                              disabled={
+                                !newCertificate.name ||
+                                !newCertificate.issuer ||
+                                !newCertificate.year
+                              }
                             >
                               Add
                             </Button>
@@ -1241,12 +1515,17 @@ const DoctorDashboard = () => {
               </DialogContent>
               <DialogActions>
                 <Button onClick={() => setIsEditing(false)}>Cancel</Button>
-                <Button onClick={handleSave} variant="contained">Save</Button>
+                <Button onClick={handleSave} variant="contained">
+                  Save
+                </Button>
               </DialogActions>
             </Dialog>
 
             {/* Add Slot Dialog */}
-            <Dialog open={showSlotDialog} onClose={() => setShowSlotDialog(false)}>
+            <Dialog
+              open={showSlotDialog}
+              onClose={() => setShowSlotDialog(false)}
+            >
               <DialogTitle>Add Time Slot</DialogTitle>
               <DialogContent>
                 <Box sx={{ mt: 2 }}>
@@ -1255,10 +1534,20 @@ const DoctorDashboard = () => {
                     fullWidth
                     label="Day"
                     value={newSlot.day}
-                    onChange={(e) => setNewSlot(prev => ({ ...prev, day: e.target.value }))}
+                    onChange={(e) =>
+                      setNewSlot((prev) => ({ ...prev, day: e.target.value }))
+                    }
                     sx={{ mb: 2 }}
                   >
-                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                    {[
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday",
+                    ].map((day) => (
                       <MenuItem key={day} value={day}>
                         {day}
                       </MenuItem>
@@ -1268,13 +1557,19 @@ const DoctorDashboard = () => {
                     <TimePicker
                       label="Start Time"
                       value={newSlot.startTime}
-                      onChange={(newValue) => setNewSlot(prev => ({ ...prev, startTime: newValue }))}
-                      slotProps={{ textField: { fullWidth: true, sx: { mb: 2 } } }}
+                      onChange={(newValue) =>
+                        setNewSlot((prev) => ({ ...prev, startTime: newValue }))
+                      }
+                      slotProps={{
+                        textField: { fullWidth: true, sx: { mb: 2 } },
+                      }}
                     />
                     <TimePicker
                       label="End Time"
                       value={newSlot.endTime}
-                      onChange={(newValue) => setNewSlot(prev => ({ ...prev, endTime: newValue }))}
+                      onChange={(newValue) =>
+                        setNewSlot((prev) => ({ ...prev, endTime: newValue }))
+                      }
                       slotProps={{ textField: { fullWidth: true } }}
                     />
                   </LocalizationProvider>
@@ -1282,13 +1577,15 @@ const DoctorDashboard = () => {
               </DialogContent>
               <DialogActions>
                 <Button onClick={() => setShowSlotDialog(false)}>Cancel</Button>
-                <Button onClick={handleSlotSubmit} variant="contained">Add</Button>
+                <Button onClick={handleSlotSubmit} variant="contained">
+                  Add
+                </Button>
               </DialogActions>
             </Dialog>
 
             {/* Add Patient Dialog */}
-            <Dialog 
-              open={showAddPatientDialog} 
+            <Dialog
+              open={showAddPatientDialog}
               onClose={() => setShowAddPatientDialog(false)}
               maxWidth="md"
               fullWidth
@@ -1307,23 +1604,30 @@ const DoctorDashboard = () => {
                     sx={{ mb: 2 }}
                     placeholder="Search by name or email"
                   />
-                  
-                  <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+
+                  <List sx={{ maxHeight: 400, overflow: "auto" }}>
                     {availablePatients.map((patient) => {
-                      const isExisting = doctorProfile.patients.some(p => p._id === patient._id);
-                      
+                      const isExisting = doctorProfile.patients.some(
+                        (p) => p._id === patient._id
+                      );
+
                       return (
-                        <ListItem 
+                        <ListItem
                           key={patient._id}
                           sx={{
-                            bgcolor: selectedPatient?._id === patient._id ? 'action.selected' : 'inherit',
-                            '&:hover': {
-                              bgcolor: 'action.hover',
+                            bgcolor:
+                              selectedPatient?._id === patient._id
+                                ? "action.selected"
+                                : "inherit",
+                            "&:hover": {
+                              bgcolor: "action.hover",
                             },
-                            opacity: isExisting ? 0.5 : 1
+                            opacity: isExisting ? 0.5 : 1,
                           }}
                           button
-                          onClick={() => !isExisting && setSelectedPatient(patient)}
+                          onClick={() =>
+                            !isExisting && setSelectedPatient(patient)
+                          }
                           disabled={isExisting}
                         >
                           <ListItemText
@@ -1342,12 +1646,15 @@ const DoctorDashboard = () => {
                       );
                     })}
                     {availablePatients.length === 0 && (
-                      <Typography color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography
+                        color="text.secondary"
+                        sx={{ p: 2, textAlign: "center" }}
+                      >
                         No patients found
                       </Typography>
                     )}
                   </List>
-            
+
                   {addPatientError && (
                     <Typography color="error" sx={{ mt: 1 }}>
                       {addPatientError}
@@ -1356,14 +1663,16 @@ const DoctorDashboard = () => {
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => {
-                  setShowAddPatientDialog(false);
-                  setSelectedPatient(null);
-                  setSearchTerm('');
-                }}>
+                <Button
+                  onClick={() => {
+                    setShowAddPatientDialog(false);
+                    setSelectedPatient(null);
+                    setSearchTerm("");
+                  }}
+                >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   onClick={handleAddPatient}
                   variant="contained"
                   disabled={!selectedPatient}
@@ -1374,8 +1683,8 @@ const DoctorDashboard = () => {
             </Dialog>
 
             {/* View Reports Dialog */}
-            <Dialog 
-              open={showReportsDialog} 
+            <Dialog
+              open={showReportsDialog}
               onClose={() => setShowReportsDialog(false)}
               maxWidth="md"
               fullWidth
@@ -1386,13 +1695,12 @@ const DoctorDashboard = () => {
                   <List>
                     {selectedPatientReports.map((report, index) => (
                       <ListItem key={index}>
-                        <ListItemText
-                          primary={report.reportName}
-                          
-                        />
+                        <ListItemText primary={report.reportName} />
                         <Button
                           variant="outlined"
-                          onClick={() => window.open(report.reportUrl, '_blank')}
+                          onClick={() =>
+                            window.open(report.reportUrl, "_blank")
+                          }
                         >
                           Open Report
                         </Button>
@@ -1402,7 +1710,9 @@ const DoctorDashboard = () => {
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setShowReportsDialog(false)}>Close</Button>
+                <Button onClick={() => setShowReportsDialog(false)}>
+                  Close
+                </Button>
               </DialogActions>
             </Dialog>
           </Container>
