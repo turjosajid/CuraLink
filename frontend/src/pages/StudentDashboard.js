@@ -1,24 +1,28 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { 
   Box, Container, Typography, Paper, Grid, Button, List, ListItem, 
-  ListItemText, CircularProgress, Avatar, Card, CardContent, CardHeader, Chip
+  ListItemText, CircularProgress, Card, CardContent, CardHeader, Avatar, Chip,
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Divider, Stack
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
+import QuizIcon from '@mui/icons-material/Quiz';
+import CaseIcon from '@mui/icons-material/Description';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const PatientDashboard = () => {
-  const [patientProfile, setPatientProfile] = useState(null);
+const StudentDashboard = () => {
+  const [studentProfile, setStudentProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user, token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const fetchPatientProfile = async () => {
+  const fetchStudentProfile = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:5000/api/patients/profile', {
+      const response = await fetch('http://localhost:5000/api/students/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -28,14 +32,12 @@ const PatientDashboard = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        // Instead of redirecting to registration, show error
         throw new Error(data.message || 'Failed to fetch profile');
       }
 
-      setPatientProfile(data);
+      setStudentProfile(data);
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      setError('Failed to load patient profile. Please try again.');
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -43,9 +45,15 @@ const PatientDashboard = () => {
 
   useEffect(() => {
     if (token) {
-      fetchPatientProfile();
+      fetchStudentProfile();
     }
   }, [token]);
+
+  const handleRetry = () => {
+    if (token) {
+      fetchStudentProfile();
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -62,13 +70,13 @@ const PatientDashboard = () => {
   if (error) return (
     <Box display="flex" flexDirection="column" alignItems="center" minHeight="80vh" padding={4}>
       <Typography color="error" gutterBottom>{error}</Typography>
-      <Button variant="contained" onClick={fetchPatientProfile} sx={{ mt: 2 }}>
+      <Button variant="contained" onClick={fetchStudentProfile} sx={{ mt: 2 }}>
         Retry Loading
       </Button>
     </Box>
   );
 
-  if (!patientProfile) return (
+  if (!studentProfile) return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
       <Typography>No profile data available</Typography>
     </Box>
@@ -101,61 +109,42 @@ const PatientDashboard = () => {
               <Box>
                 <Typography variant="h4">{user.name}</Typography>
                 <Typography variant="subtitle1" color="text.secondary">
-                  {patientProfile.email}
+                  Medical Student
                 </Typography>
               </Box>
             </Box>
-            <Button
-              variant="outlined"
-              color="error"
-              startIcon={<LogoutIcon />}
-              onClick={handleLogout}
-            >
-              Logout
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            </Box>
           </Box>
         </Card>
 
         <Grid container spacing={3}>
-          {/* Profile Information */}
-          <Grid item xs={12} md={8}>
+          {/* Quiz Scores */}
+          <Grid item xs={12} md={6}>
             <Card>
-              <CardHeader title="Profile Information" />
-              <CardContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2 }}>
-                      Phone
-                    </Typography>
-                    <Typography paragraph>{patientProfile.phone}</Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Address
-                    </Typography>
-                    <Box sx={{ mt: 1, mb: 2 }}>
-                      <Typography>
-                        {`${patientProfile.address?.street}, ${patientProfile.address?.city}`}<br />
-                        {`${patientProfile.address?.state}, ${patientProfile.address?.country}`}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Medical History */}
-          <Grid item xs={12} md={4}>
-            <Card>
-              <CardHeader title="Medical History" />
+              <CardHeader 
+                title={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <QuizIcon sx={{ mr: 1 }} />
+                    <Typography variant="h6">Quiz Scores</Typography>
+                  </Box>
+                }
+              />
               <CardContent>
                 <List>
-                  {patientProfile.medicalHistory?.map((history, index) => (
+                  {studentProfile.quizScores.map((quiz, index) => (
                     <ListItem key={index}>
                       <ListItemText
-                        primary={history.description}
-                        secondary={new Date(history.date).toLocaleDateString()}
+                        primary={`Quiz ID: ${quiz.quizId}`}
+                        secondary={`Score: ${quiz.score} - Date: ${new Date(quiz.date).toLocaleDateString()}`}
                       />
                     </ListItem>
                   ))}
@@ -164,36 +153,24 @@ const PatientDashboard = () => {
             </Card>
           </Grid>
 
-          {/* Medical Reports */}
+          {/* Accessed Case Studies */}
           <Grid item xs={12} md={6}>
             <Card>
-              <CardHeader title="Medical Reports" />
+              <CardHeader 
+                title={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <CaseIcon sx={{ mr: 1 }} />
+                    <Typography variant="h6">Accessed Case Studies</Typography>
+                  </Box>
+                }
+              />
               <CardContent>
                 <List>
-                  {patientProfile.medicalReports?.map((report, index) => (
+                  {studentProfile.accessedCases.map((caseStudy, index) => (
                     <ListItem key={index}>
                       <ListItemText
-                        primary={report.reportName}
-                        secondary={new Date(report.date).toLocaleDateString()}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Appointments */}
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardHeader title="Appointments" />
-              <CardContent>
-                <List>
-                  {patientProfile.appointments?.map((appointment, index) => (
-                    <ListItem key={index}>
-                      <ListItemText
-                        primary={`Appointment on ${new Date(appointment.date).toLocaleDateString()}`}
-                        secondary={`Status: ${appointment.status}`}
+                        primary={caseStudy.caseId.title}
+                        secondary={`Accessed on: ${new Date(caseStudy.date).toLocaleDateString()}`}
                       />
                     </ListItem>
                   ))}
@@ -207,4 +184,4 @@ const PatientDashboard = () => {
   );
 };
 
-export default PatientDashboard;
+export default StudentDashboard;

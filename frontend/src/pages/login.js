@@ -19,6 +19,8 @@ const LoginPage = () => {
         navigate('/doctor/dashboard');
       } else if (response.data.user.role === 'pharmacist') {
         navigate('/pharmacist/dashboard');
+      } else if (response.data.user.role === 'student') {
+        navigate('/student/dashboard');
       } else {
         navigate('/patient/dashboard');
       }

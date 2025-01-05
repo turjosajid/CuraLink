@@ -25,21 +25,10 @@ const Register = () => {
       const data = await response.json();
       
       if (!response.ok) throw new Error(data.message);
-
-      // Create patient document
-      await fetch('http://localhost:5000/api/patients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: data.user._id, phone: formData.phone, address: formData.address }),
-      });
-
+      
       navigate('/login');
     } catch (err) {
-      if (err.message.includes('duplicate key error')) {
-        setError('Email already exists. Please use a different email.');
-      } else {
-        setError(err.message);
-      }
+      setError(err.message);
     }
   };
 
@@ -85,6 +74,7 @@ const Register = () => {
               <MenuItem value="patient">Patient</MenuItem>
               <MenuItem value="doctor">Doctor</MenuItem>
               <MenuItem value="pharmacist">Pharmacist</MenuItem>
+              <MenuItem value="student">Medical Student</MenuItem>
             </Select>
           </FormControl>
           <TextField

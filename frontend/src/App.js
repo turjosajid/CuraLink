@@ -2,11 +2,12 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/home";
 import LoginPage from "./pages/login";
-import Register from "./pages/Register";
+import Register from "./pages/register";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import DoctorRegistration from './pages/DoctorRegistration';
 import PatientDashboard from './pages/PatientDashboard';
 import PharmacistDashboard from './pages/PharmacistDashboard';
+import StudentDashboard from './pages/StudentDashboard';
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 // Protected Route Component
@@ -54,6 +55,14 @@ function App() {
             element={
               <PrivateRoute allowedRoles={['pharmacist']}>
                 <PharmacistDashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/student/dashboard" 
+            element={
+              <PrivateRoute allowedRoles={['student']}>
+                <StudentDashboard />
               </PrivateRoute>
             } 
           />
