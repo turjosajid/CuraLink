@@ -1063,12 +1063,12 @@ const DoctorDashboard = () => {
                                 </Typography>
                               }
                             />
-                            <IconButton
+                            {/* <IconButton
                               edge="end"
                               onClick={() => handleRemoveCertificate(index)}
                             >
                               <DeleteIcon />
-                            </IconButton>
+                            </IconButton> */}
                           </ListItem>
                         ))}
                       </List>
