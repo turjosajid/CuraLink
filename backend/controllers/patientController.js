@@ -158,7 +158,7 @@ exports.uploadMedicalReport = async (req, res) => {
 // Add medical history
 exports.addMedicalHistory = async (req, res) => {
   const { id } = req.params;
-  const { description, date } = req.body;
+  const { description, date, drugs } = req.body;
 
   try {
     const patient = await Patient.findById(id);
@@ -169,6 +169,7 @@ exports.addMedicalHistory = async (req, res) => {
     const newHistory = {
       description,
       date,
+      drugs,
     };
 
     patient.medicalHistory.push(newHistory);

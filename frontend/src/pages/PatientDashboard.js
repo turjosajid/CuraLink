@@ -22,8 +22,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
+  Collapse,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -43,6 +46,8 @@ const PatientDashboard = () => {
   const [appointmentDate, setAppointmentDate] = useState(null); // Add state for appointment date
   const [medicalHistoryDescription, setMedicalHistoryDescription] = useState(""); // Add state for medical history description
   const [medicalHistoryDate, setMedicalHistoryDate] = useState(null); // Add state for medical history date
+  const [drugs, setDrugs] = useState([{ name: "", dosage: "" }]); // Add state for drugs
+  const [expanded, setExpanded] = useState({}); // Add state for expanded medical history
   const { user, token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -257,6 +262,7 @@ const PatientDashboard = () => {
           body: JSON.stringify({
             description: medicalHistoryDescription,
             date: medicalHistoryDate,
+            drugs,
           }),
         }
       );
@@ -273,6 +279,7 @@ const PatientDashboard = () => {
       }));
       setMedicalHistoryDescription("");
       setMedicalHistoryDate(null);
+      setDrugs([{ name: "", dosage: "" }]); // Reset drugs
     } catch (error) {
       console.error("Error adding medical history:", error);
       setError("Failed to add medical history. Please try again.");
@@ -309,6 +316,28 @@ const PatientDashboard = () => {
       console.error("Error removing medical history:", error);
       setError("Failed to remove medical history. Please try again.");
     }
+  };
+
+  const handleDrugChange = (index, field, value) => {
+    const newDrugs = [...drugs];
+    newDrugs[index][field] = value;
+    setDrugs(newDrugs);
+  };
+
+  const handleAddDrug = () => {
+    setDrugs([...drugs, { name: "", dosage: "" }]);
+  };
+
+  const handleRemoveDrug = (index) => {
+    const newDrugs = drugs.filter((_, i) => i !== index);
+    setDrugs(newDrugs);
+  };
+
+  const handleExpandClick = (index) => {
+    setExpanded((prevExpanded) => ({
+      ...prevExpanded,
+      [index]: !prevExpanded[index],
+    }));
   };
 
   if (isLoading)
@@ -446,13 +475,59 @@ const PatientDashboard = () => {
                 <CardContent>
                   <List>
                     {patientProfile.medicalHistory?.map((history, index) => (
-                      <ListItem key={index}>
+                      <ListItem key={index} alignItems="flex-start">
                         <ListItemText
                           primary={history.description}
-                          secondary={new Date(
-                            history.date
-                          ).toLocaleDateString()}
+                          secondary={
+                            <>
+                              <Typography
+                                component="span"
+                                variant="body2"
+                                color="text.primary"
+                              >
+                                Date: {new Date(history.date).toLocaleDateString()}
+                              </Typography>
+                              <br />
+                              {history.drugs.map((drug, i) => (
+                                <Typography
+                                  key={i}
+                                  component="span"
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {`Drug ${i + 1}: ${drug.name} - ${drug.dosage}`}
+                                  <br />
+                                </Typography>
+                              ))}
+                            </>
+                          }
                         />
+                        <IconButton
+                          onClick={() => handleExpandClick(index)}
+                          aria-expanded={expanded[index]}
+                          aria-label="show more"
+                        >
+                          <ExpandMoreIcon />
+                        </IconButton>
+                        <Collapse in={expanded[index]} timeout="auto" unmountOnExit>
+                          <Box sx={{ mt: 2 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              Detailed Information:
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {history.description}
+                            </Typography>
+                            {history.drugs.map((drug, i) => (
+                              <Typography
+                                key={i}
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {`Drug ${i + 1}: ${drug.name} - ${drug.dosage}`}
+                              </Typography>
+                            ))}
+                          </Box>
+                        </Collapse>
                         <Button
                           variant="contained"
                           color="secondary"
@@ -484,6 +559,38 @@ const PatientDashboard = () => {
                         <TextField {...params} fullWidth sx={{ mb: 2 }} />
                       )}
                     />
+                    {drugs.map((drug, index) => (
+                      <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                        <TextField
+                          label="Drug Name"
+                          value={drug.name}
+                          onChange={(e) => handleDrugChange(index, 'name', e.target.value)}
+                          fullWidth
+                        />
+                        <TextField
+                          label="Dosage"
+                          value={drug.dosage}
+                          onChange={(e) => handleDrugChange(index, 'dosage', e.target.value)}
+                          fullWidth
+                        />
+                        <Button
+                          variant="contained"
+                          color="error"
+                          onClick={() => handleRemoveDrug(index)}
+                        >
+                          Remove
+                        </Button>
+                      </Box>
+                    ))}
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      onClick={handleAddDrug}
+                      sx={{ mb: 2 }}
+                    >
+                      Add Drug
+                    </Button>
                     <Button
                       variant="contained"
                       color="primary"
