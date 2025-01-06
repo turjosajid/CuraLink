@@ -95,10 +95,8 @@ const doctorSchema = new mongoose.Schema(
     timeSlots: [timeSlotSchema],
     isAvailable: {
       type: Boolean,
-      default: false,
-    },
-  },
-  { timestamps: true }
-);
+      default: false
+  }
+}, { timestamps: true });
 
-module.exports = mongoose.model("Doctor", doctorSchema);
+module.exports = mongoose.model('Doctor', doctorSchema);

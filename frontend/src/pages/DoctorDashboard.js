@@ -234,7 +234,7 @@ const DoctorDashboard = () => {
   const fetchUpcomingAppointments = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/doctors/appointments",
+        `http://localhost:5000/api/doctors/appointments?doctorId=${doctorProfile._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -247,6 +247,11 @@ const DoctorDashboard = () => {
       console.error("Error fetching appointments:", error);
     }
   };
+  useEffect(() => {
+    if (doctorProfile && doctorProfile._id) {
+      fetchUpcomingAppointments();
+    }
+  }, [doctorProfile]);
 
   useEffect(() => {
     if (token) {
@@ -578,6 +583,66 @@ const DoctorDashboard = () => {
       setShowReportsDialog(true);
     } catch (error) {
       console.error("Error fetching medical reports:", error);
+    }
+  };
+
+  const handleCancelAppointment = async (appointmentId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/doctors/appointments/${appointmentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to cancel appointment");
+      }
+
+      setUpcomingAppointments((prev) =>
+        prev.filter((appointment) => appointment._id !== appointmentId)
+      );
+    } catch (error) {
+      console.error("Error cancelling appointment:", error);
+    }
+  };
+
+  const [selectedPatientHistory, setSelectedPatientHistory] = useState([]);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+
+  const fetchMedicalHistory = async (patientId) => {
+    try {
+      if (!patientId) {
+        throw new Error("Patient ID is required");
+      }
+
+      const response = await fetch(
+        `http://localhost:5000/api/doctors/patients/${patientId}/medical-history`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Received non-JSON response");
+      }
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to fetch medical history");
+      }
+
+      setSelectedPatientHistory(data.medicalHistory);
+      setShowHistoryDialog(true);
+    } catch (error) {
+      console.error("Error fetching medical history:", error);
     }
   };
 
@@ -970,12 +1035,6 @@ const DoctorDashboard = () => {
                                 </Typography>
                               }
                             />
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleRemoveEducation(index)}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
                           </ListItem>
                         ))}
                       </List>
@@ -1064,6 +1123,13 @@ const DoctorDashboard = () => {
                               onClick={() => fetchMedicalReports(patient._id)}
                             >
                               View Reports
+                            </Button>
+                            <Button
+                              sx={{ margin: "10px" }}
+                              variant="outlined"
+                              onClick={() => fetchMedicalHistory(patient._id)}
+                            >
+                              View History
                             </Button>
                             <IconButton
                               edge="end"
@@ -1189,6 +1255,15 @@ const DoctorDashboard = () => {
                               ).toLocaleDateString()}`}
                               secondary={`${appointment.startTime} - ${appointment.endTime}`}
                             />
+
+                            <IconButton
+                              edge="end"
+                              onClick={() =>
+                                handleCancelAppointment(appointment._id)
+                              }
+                            >
+                              <DeleteIcon />
+                            </IconButton>
                           </ListItem>
                         ))}
                       </List>
@@ -1706,6 +1781,47 @@ const DoctorDashboard = () => {
               </DialogContent>
               <DialogActions>
                 <Button onClick={() => setShowReportsDialog(false)}>
+                  Close
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            {/* View History Dialog */}
+            <Dialog
+              open={showHistoryDialog}
+              onClose={() => setShowHistoryDialog(false)}
+              maxWidth="md"
+              fullWidth
+            >
+              <DialogTitle>Medical History</DialogTitle>
+              <DialogContent>
+                <Box sx={{ mt: 2 }}>
+                  <List>
+                    {selectedPatientHistory.map((history, index) => (
+                      <ListItem key={index}>
+                        <ListItemText
+                          primary={history.description}
+                          secondary={`Date: ${new Date(
+                            history.date
+                          ).toLocaleDateString()}`}
+                        />
+                        <List>
+                          {history.drugs.map((prescription, idx) => (
+                            <ListItem key={idx}>
+                              <ListItemText
+                                primary={prescription.name}
+                                secondary={`Dosage: ${prescription.dosage}`}
+                              />
+                            </ListItem>
+                          ))}
+                        </List>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setShowHistoryDialog(false)}>
                   Close
                 </Button>
               </DialogActions>

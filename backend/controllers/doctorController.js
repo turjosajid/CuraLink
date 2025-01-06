@@ -35,10 +35,11 @@ exports.getDoctorProfile = async (req, res) => {
       });
     }
 
-    console.log("Doctor profile found:", doctor);
+    console.log("Doctor profile found:", doctor); // Debug log
     res.status(200).json(doctor);
   } catch (error) {
-    console.error("Error in getDoctorProfile:", error);
+    console.error("Error in getDoctorProfile:", error); // Debug log
+
     res.status(500).json({
       message: "Error fetching doctor profile",
       error: error.message,
@@ -166,8 +167,9 @@ exports.removePatient = async (req, res) => {
 
 exports.getUpcomingAppointments = async (req, res) => {
   try {
+    const doctorId = req.query.doctorId;
     const appointments = await Appointment.find({
-      doctorId: req.user._id,
+      doctorId,
       date: { $gte: new Date() },
     })
       .populate("patientId", "name")
@@ -219,6 +221,34 @@ exports.getMedicalReports = async (req, res) => {
   }
 };
 
+exports.getMedicalHistory = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    // Verify if the doctor has access to the patient
+    const doctor = await Doctor.findOne({ userId: req.user._id });
+    if (!doctor.patients.includes(patientId)) {
+      return res
+        .status(403)
+        .json({ message: "Patient not found in your list" });
+    }
+
+    // Fetch the patient's medical history
+    const patient = await Patient.findOne({ userId: patientId }).select(
+      "medicalHistory"
+    );
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    // Respond with the medical history
+    res.status(200).json({ medicalHistory: patient.medicalHistory });
+  } catch (error) {
+    // Handle errors and respond with a meaningful message
+    res.status(400).json({ message: error.message });
+  }
+};
+
 exports.getAllDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.find({ isAvailable: true })
@@ -228,5 +258,25 @@ exports.getAllDoctors = async (req, res) => {
     res.status(200).json(doctors);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+exports.deleteAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+
+    // Check if the appointment exists
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // Delete the appointment
+    await Appointment.findByIdAndDelete(appointmentId);
+
+    res.status(200).json({ message: "Appointment deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting appointment:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

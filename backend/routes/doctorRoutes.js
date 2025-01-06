@@ -12,6 +12,8 @@ const {
   toggleAvailability,
   getMedicalReports,
   getAllDoctors,
+  deleteAppointment,
+  getMedicalHistory, // Add this import
 } = require("../controllers/doctorController");
 const { protect, restrictTo } = require("../middleware/auth");
 
@@ -30,7 +32,9 @@ router.post("/patients", addPatient);
 router.delete("/patients/:patientId", removePatient); // Add this new route
 router.get("/appointments", getUpcomingAppointments); // Add this new route
 router.patch("/availability", toggleAvailability); // Add this new route
-router.get("/patients/:patientId/medical-reports", getMedicalReports); // Add this new route
+router.get("/patients/:patientId/medical-reports", getMedicalReports);
+router.get("/patients/:patientId/medical-history", getMedicalHistory); // Add this new route
 router.get("/all-doctors", getAllDoctors); // Add this new route
+router.delete("/appointments/:appointmentId", deleteAppointment); // Add this new route
 
 module.exports = router;
