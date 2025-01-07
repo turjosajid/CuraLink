@@ -3,7 +3,6 @@ import {
   Box,
   Container,
   Typography,
-  Paper,
   Grid,
   Button,
   List,
@@ -14,7 +13,6 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Chip,
   TextField,
   Alert,
   Link,
@@ -47,7 +45,7 @@ const PatientDashboard = () => {
   const [medicalHistoryDescription, setMedicalHistoryDescription] = useState(""); // Add state for medical history description
   const [medicalHistoryDate, setMedicalHistoryDate] = useState(null); // Add state for medical history date
   const [drugs, setDrugs] = useState([{ name: "", dosage: "" }]); // Add state for drugs
-  const [expanded, setExpanded] = useState({}); // Add state for expanded medical history
+  const [expanded, setExpanded] = useState({}); // Add state for expanded cards
   const { user, token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -436,283 +434,364 @@ const PatientDashboard = () => {
 
           <Grid container spacing={3}>
             {/* Profile Information */}
-            <Grid item xs={12} md={8}>
+            <Grid item xs={12} md={6}>
               <Card>
-                <CardHeader title="Profile Information" />
-                <CardContent>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <Typography
-                        variant="subtitle2"
-                        color="text.secondary"
-                        sx={{ mt: 2 }}
-                      >
-                        Phone
-                      </Typography>
-                      <Typography paragraph>{patientProfile.phone}</Typography>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        Address
-                      </Typography>
-                      <Box sx={{ mt: 1, mb: 2 }}>
-                        <Typography>
-                          {`${patientProfile.address?.street}, ${patientProfile.address?.city}`}
-                          <br />
-                          {`${patientProfile.address?.state}, ${patientProfile.address?.country}`}
+                <CardHeader
+                  title="Profile Information"
+                  action={
+                    <IconButton
+                      onClick={() => handleExpandClick("profile")}
+                      aria-expanded={expanded["profile"]}
+                      aria-label="show more"
+                    >
+                      <ExpandMoreIcon />
+                    </IconButton>
+                  }
+                />
+                <Collapse in={expanded["profile"]} timeout="auto" unmountOnExit>
+                  <CardContent>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={6}>
+                        <Typography
+                          variant="subtitle2"
+                          color="text.secondary"
+                          sx={{ mt: 2 }}
+                        >
+                          Phone
                         </Typography>
-                      </Box>
+                        <Typography paragraph>{patientProfile.phone}</Typography>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Address
+                        </Typography>
+                        <Box sx={{ mt: 1, mb: 2 }}>
+                          <Typography>
+                            {`${patientProfile.address?.street || ''}, ${patientProfile.address?.city || ''}`}
+                            <br />
+                            {`${patientProfile.address?.state || ''}, ${patientProfile.address?.country || ''}`}
+                          </Typography>
+                        </Box>
+                      </Grid>
                     </Grid>
-                  </Grid>
-                </CardContent>
+                  </CardContent>
+                </Collapse>
               </Card>
             </Grid>
 
             {/* Medical History */}
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={6}>
               <Card>
-                <CardHeader title="Medical History" />
-                <CardContent>
-                  <List>
-                    {patientProfile.medicalHistory?.map((history, index) => (
-                      <ListItem key={index} alignItems="flex-start">
-                        <ListItemText
-                          primary={history.description}
-                          secondary={
-                            <>
-                              <Typography
-                                component="span"
-                                variant="body2"
-                                color="text.primary"
-                              >
-                                Date: {new Date(history.date).toLocaleDateString()}
+                <CardHeader
+                  title="Medical History"
+                  action={
+                    <IconButton
+                      onClick={() => handleExpandClick("medicalHistory")}
+                      aria-expanded={expanded["medicalHistory"]}
+                      aria-label="show more"
+                    >
+                      <ExpandMoreIcon />
+                    </IconButton>
+                  }
+                />
+                <Collapse
+                  in={expanded["medicalHistory"]}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  <CardContent>
+                    <List>
+                      {patientProfile.medicalHistory?.map((history, index) => (
+                        <ListItem key={index} alignItems="flex-start">
+                          <ListItemText
+                            primary={history.description}
+                            secondary={
+                              <>
+                                <Typography
+                                  component="span"
+                                  variant="body2"
+                                  color="text.primary"
+                                >
+                                  Date: {new Date(history.date).toLocaleDateString()}
+                                </Typography>
+                                <br />
+                                {history.drugs.map((drug, i) => (
+                                  <Typography
+                                    key={i}
+                                    component="span"
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    {`Drug ${i + 1}: ${drug.name} - ${drug.dosage}`}
+                                    <br />
+                                  </Typography>
+                                ))}
+                              </>
+                            }
+                          />
+                          <IconButton
+                            onClick={() => handleExpandClick(index)}
+                            aria-expanded={expanded[index]}
+                            aria-label="show more"
+                          >
+                            <ExpandMoreIcon />
+                          </IconButton>
+                          <Collapse in={expanded[index]} timeout="auto" unmountOnExit>
+                            <Box sx={{ mt: 2 }}>
+                              <Typography variant="body2" color="text.secondary">
+                                Detailed Information:
                               </Typography>
-                              <br />
+                              <Typography variant="body2" color="text.secondary">
+                                {history.description}
+                              </Typography>
                               {history.drugs.map((drug, i) => (
                                 <Typography
                                   key={i}
-                                  component="span"
                                   variant="body2"
                                   color="text.secondary"
                                 >
                                   {`Drug ${i + 1}: ${drug.name} - ${drug.dosage}`}
-                                  <br />
                                 </Typography>
                               ))}
-                            </>
-                          }
-                        />
-                        <IconButton
-                          onClick={() => handleExpandClick(index)}
-                          aria-expanded={expanded[index]}
-                          aria-label="show more"
-                        >
-                          <ExpandMoreIcon />
-                        </IconButton>
-                        <Collapse in={expanded[index]} timeout="auto" unmountOnExit>
-                          <Box sx={{ mt: 2 }}>
-                            <Typography variant="body2" color="text.secondary">
-                              Detailed Information:
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {history.description}
-                            </Typography>
-                            {history.drugs.map((drug, i) => (
-                              <Typography
-                                key={i}
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {`Drug ${i + 1}: ${drug.name} - ${drug.dosage}`}
-                              </Typography>
-                            ))}
-                          </Box>
-                        </Collapse>
-                        <Button
-                          variant="contained"
-                          color="secondary"
-                          onClick={() => handleRemoveMedicalHistory(history._id)}
-                        >
-                          Remove
-                        </Button>
-                      </ListItem>
-                    ))}
-                  </List>
-                  {error && (
-                    <Alert severity="error" sx={{ mt: 2 }}>
-                      {error}
-                    </Alert>
-                  )}
-                  <Box sx={{ mt: 2 }}>
-                    <TextField
-                      fullWidth
-                      label="Description"
-                      value={medicalHistoryDescription}
-                      onChange={(e) => setMedicalHistoryDescription(e.target.value)}
-                      sx={{ mb: 2 }}
-                    />
-                    <DatePicker
-                      label="Select Date"
-                      value={medicalHistoryDate}
-                      onChange={(newValue) => setMedicalHistoryDate(newValue)}
-                      renderInput={(params) => (
-                        <TextField {...params} fullWidth sx={{ mb: 2 }} />
-                      )}
-                    />
-                    {drugs.map((drug, index) => (
-                      <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                        <TextField
-                          label="Drug Name"
-                          value={drug.name}
-                          onChange={(e) => handleDrugChange(index, 'name', e.target.value)}
-                          fullWidth
-                        />
-                        <TextField
-                          label="Dosage"
-                          value={drug.dosage}
-                          onChange={(e) => handleDrugChange(index, 'dosage', e.target.value)}
-                          fullWidth
-                        />
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={() => handleRemoveDrug(index)}
-                        >
-                          Remove
-                        </Button>
-                      </Box>
-                    ))}
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      onClick={handleAddDrug}
-                      sx={{ mb: 2 }}
-                    >
-                      Add Drug
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      onClick={handleAddMedicalHistory}
-                    >
-                      Add Medical History
-                    </Button>
-                  </Box>
-                </CardContent>
+                            </Box>
+                          </Collapse>
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => handleRemoveMedicalHistory(history._id)}
+                          >
+                            Remove
+                          </Button>
+                        </ListItem>
+                      ))}
+                    </List>
+                    {error && (
+                      <Alert severity="error" sx={{ mt: 2 }}>
+                        {error}
+                      </Alert>
+                    )}
+                    <Box sx={{ mt: 2 }}>
+                      <TextField
+                        fullWidth
+                        label="Description"
+                        value={medicalHistoryDescription}
+                        onChange={(e) => setMedicalHistoryDescription(e.target.value)}
+                        sx={{ mb: 2 }}
+                      />
+                      <DatePicker
+                        label="Select Date"
+                        value={medicalHistoryDate}
+                        onChange={(newValue) => setMedicalHistoryDate(newValue)}
+                        renderInput={(params) => (
+                          <TextField {...params} fullWidth sx={{ mb: 2 }} />
+                        )}
+                      />
+                      {drugs.map((drug, index) => (
+                        <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                          <TextField
+                            label="Drug Name"
+                            value={drug.name}
+                            onChange={(e) => handleDrugChange(index, 'name', e.target.value)}
+                            fullWidth
+                          />
+                          <TextField
+                            label="Dosage"
+                            value={drug.dosage}
+                            onChange={(e) => handleDrugChange(index, 'dosage', e.target.value)}
+                            fullWidth
+                          />
+                          <Button
+                            variant="contained"
+                            color="error"
+                            onClick={() => handleRemoveDrug(index)}
+                          >
+                            Remove
+                          </Button>
+                        </Box>
+                      ))}
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        onClick={handleAddDrug}
+                        sx={{ mb: 2 }}
+                      >
+                        Add Drug
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        onClick={handleAddMedicalHistory}
+                      >
+                        Add Medical History
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Collapse>
               </Card>
             </Grid>
 
             {/* Medical Reports */}
             <Grid item xs={12} md={6}>
               <Card>
-                <CardHeader title="Medical Reports" />
-                <CardContent>
-                  <List>
-                    {patientProfile.medicalReports?.map((report, index) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={report.reportName}
-                          secondary={new Date(report.date).toLocaleDateString()}
-                        />
-                        <Link
-                          href={report.reportUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View Report
-                        </Link>
-                      </ListItem>
-                    ))}
-                  </List>
-                  {error && (
-                    <Alert severity="error" sx={{ mt: 2 }}>
-                      {error}
-                    </Alert>
-                  )}
-                  <Box sx={{ mt: 2 }}>
-                    <TextField
-                      fullWidth
-                      label="Report Name"
-                      value={reportName}
-                      onChange={(e) => setReportName(e.target.value)}
-                      sx={{ mb: 2 }}
-                    />
-                    <Button variant="contained" component="label" fullWidth>
-                      Select PDF File
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        hidden
-                        onChange={handleFileChange}
-                      />
-                    </Button>
-                    {selectedFileName && (
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        Selected file: {selectedFileName}
-                      </Typography>
-                    )}
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      sx={{ mt: 2 }}
-                      onClick={handleUploadReport}
+                <CardHeader
+                  title="Medical Reports"
+                  action={
+                    <IconButton
+                      onClick={() => handleExpandClick("medicalReports")}
+                      aria-expanded={expanded["medicalReports"]}
+                      aria-label="show more"
                     >
-                      Upload Report
-                    </Button>
-                  </Box>
-                </CardContent>
+                      <ExpandMoreIcon />
+                    </IconButton>
+                  }
+                />
+                <Collapse
+                  in={expanded["medicalReports"]}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  <CardContent>
+                    <List>
+                      {patientProfile.medicalReports?.map((report, index) => (
+                        <ListItem key={index}>
+                          <ListItemText
+                            primary={report.reportName}
+                            secondary={new Date(report.date).toLocaleDateString()}
+                          />
+                          <Link
+                            href={report.reportUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View Report
+                          </Link>
+                        </ListItem>
+                      ))}
+                    </List>
+                    {error && (
+                      <Alert severity="error" sx={{ mt: 2 }}>
+                        {error}
+                      </Alert>
+                    )}
+                    <Box sx={{ mt: 2 }}>
+                      <TextField
+                        fullWidth
+                        label="Report Name"
+                        value={reportName}
+                        onChange={(e) => setReportName(e.target.value)}
+                        sx={{ mb: 2 }}
+                      />
+                      <Button variant="contained" component="label" fullWidth>
+                        Select PDF File
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          hidden
+                          onChange={handleFileChange}
+                        />
+                      </Button>
+                      {selectedFileName && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          Selected file: {selectedFileName}
+                        </Typography>
+                      )}
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        sx={{ mt: 2 }}
+                        onClick={handleUploadReport}
+                      >
+                        Upload Report
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Collapse>
               </Card>
             </Grid>
 
             {/* Appointments */}
             <Grid item xs={12} md={6}>
               <Card>
-                <CardHeader title="Appointments" />
-                <CardContent>
-                  <List>
-                    {patientProfile.appointments?.map((appointment, index) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={`Appointment with Dr. ${
-                            appointment.doctorId?.userId?.name || "Unknown"
-                          } on ${new Date(
-                            appointment.date
-                          ).toLocaleDateString()} at ${appointment.startTime}`}
-                          secondary={`Status: ${appointment.status}`}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </CardContent>
+                <CardHeader
+                  title="Appointments"
+                  action={
+                    <IconButton
+                      onClick={() => handleExpandClick("appointments")}
+                      aria-expanded={expanded["appointments"]}
+                      aria-label="show more"
+                    >
+                      <ExpandMoreIcon />
+                    </IconButton>
+                  }
+                />
+                <Collapse
+                  in={expanded["appointments"]}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  <CardContent>
+                    <List>
+                      {patientProfile.appointments?.map((appointment, index) => (
+                        <ListItem key={index}>
+                          <ListItemText
+                            primary={`Appointment with Dr. ${
+                              appointment.doctorId?.userId?.name || "Unknown"
+                            } on ${new Date(
+                              appointment.date
+                            ).toLocaleDateString()} at ${appointment.startTime}`}
+                            secondary={`Status: ${appointment.status}`}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </CardContent>
+                </Collapse>
               </Card>
             </Grid>
 
             {/* Available Doctors */}
             <Grid item xs={12} md={6}>
               <Card>
-                <CardHeader title="Available Doctors" />
-                <CardContent>
-                  <List>
-                    {doctors.map((doctor) => (
-                      <ListItem key={doctor._id}>
-                        <ListItemText
-                          primary={doctor.userId.name}
-                          secondary={`${doctor.userId.email} - ${doctor.specialization}`}
-                        />
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => handleDoctorSelect(doctor)}
-                        >
-                          Book Appointment
-                        </Button>
-                      </ListItem>
-                    ))}
-                  </List>
-                </CardContent>
+                <CardHeader
+                  title="Available Doctors"
+                  action={
+                    <IconButton
+                      onClick={() => handleExpandClick("availableDoctors")}
+                      aria-expanded={expanded["availableDoctors"]}
+                      aria-label="show more"
+                    >
+                      <ExpandMoreIcon />
+                    </IconButton>
+                  }
+                />
+                <Collapse
+                  in={expanded["availableDoctors"]}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  <CardContent>
+                    <List>
+                      {doctors.map((doctor) => (
+                        <ListItem key={doctor._id}>
+                          <ListItemText
+                            primary={doctor.userId.name}
+                            secondary={`${doctor.userId.email} - ${doctor.specialization}`}
+                          />
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleDoctorSelect(doctor)}
+                          >
+                            Book Appointment
+                          </Button>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </CardContent>
+                </Collapse>
               </Card>
             </Grid>
           </Grid>

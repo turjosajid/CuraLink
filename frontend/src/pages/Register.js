@@ -73,6 +73,7 @@ const Register = () => {
             >
               <MenuItem value="patient">Patient</MenuItem>
               <MenuItem value="doctor">Doctor</MenuItem>
+              <MenuItem value="pharmacist">pharmacist</MenuItem>
             </Select>
           </FormControl>
           <TextField
